@@ -139,6 +139,20 @@ export class APMEventClient {
     });
   }
 
+  async getUserSessions(start: number, end: number): Promise<any> {
+    // TODO: Use a raw es query here using this.esClient and on the synthplay index to get
+    // all the user sessions within range 'start' and 'end'
+
+    return Promise.resolve([
+      {
+        sessionId: 'some378-343mf-34-df-d-3uuf',
+        startedAt: 1646219699266,
+        duration: 2000,
+        isActive: false,
+      },
+    ]);
+  }
+
   async termsEnum(
     operationName: string,
     params: APMEventESTermsEnumRequest

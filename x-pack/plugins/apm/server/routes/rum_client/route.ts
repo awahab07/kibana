@@ -16,6 +16,7 @@ import { getPageViewTrends } from './get_page_view_trends';
 import { getPageLoadDistBreakdown } from './get_pl_dist_breakdown';
 import { getRumServices } from './get_rum_services';
 import { getUrlSearch } from './get_url_search';
+import { getUserSessions } from './get_user_sessions';
 import { getVisitorBreakdown } from './get_visitor_breakdown';
 import { getWebCoreVitals } from './get_web_core_vitals';
 import { hasRumData } from './has_rum_data';
@@ -367,6 +368,41 @@ const rumJSErrors = createApmServerRoute({
   },
 });
 
+const rumUserSessions = createApmServerRoute({
+  endpoint: 'GET /internal/apm/ux/user-sessions',
+  params: t.type({
+    query: t.intersection([
+      uiFiltersRt,
+      rangeRt,
+      t.partial({ pageSize: t.string, pageIndex: t.string }),
+      t.partial({ urlQuery: t.string }),
+    ]),
+  }),
+  options: { tags: ['access:apm'] },
+  handler: async (
+    resources
+  ): Promise<{
+    items: Array<{
+      sessionId: string;
+      startedAt: number;
+      duration: number;
+      isActive: boolean;
+    }>;
+  }> => {
+    const setup = await setupUXRequest(resources);
+
+    const {
+      query: { start, end },
+    } = resources.params;
+
+    return getUserSessions({
+      setup,
+      start,
+      end,
+    });
+  },
+});
+
 const rumHasDataRoute = createApmServerRoute({
   endpoint: 'GET /api/apm/observability_overview/has_rum_data',
   params: t.partial({
@@ -432,5 +468,6 @@ export const rumRouteRepository = {
   ...rumLongTaskMetrics,
   ...rumUrlSearch,
   ...rumJSErrors,
+  ...rumUserSessions,
   ...rumHasDataRoute,
 };

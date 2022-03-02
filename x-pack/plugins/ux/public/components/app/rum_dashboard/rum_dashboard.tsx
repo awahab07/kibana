@@ -7,6 +7,7 @@
 
 import { EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
 import React from 'react';
+import { UserSessions } from './user_sessions';
 import { UXMetrics } from './ux_metrics';
 import { ImpactfulMetrics } from './impactful_metrics';
 import { PageLoadAndViews } from './panels/page_load_and_views';
@@ -33,6 +34,9 @@ export function RumDashboard() {
       </EuiFlexItem>
       <EuiFlexItem>
         <ImpactfulMetrics />
+      </EuiFlexItem>
+      <EuiFlexItem>
+        <UserSessions />
       </EuiFlexItem>
     </EuiFlexGroup>
   );
