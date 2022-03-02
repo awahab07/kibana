@@ -16,7 +16,7 @@ import { getPageViewTrends } from './get_page_view_trends';
 import { getPageLoadDistBreakdown } from './get_pl_dist_breakdown';
 import { getRumServices } from './get_rum_services';
 import { getUrlSearch } from './get_url_search';
-import { getUserSessions } from './get_user_sessions';
+import { getScriptForSessionId, getUserSessions } from './get_user_sessions';
 import { getVisitorBreakdown } from './get_visitor_breakdown';
 import { getWebCoreVitals } from './get_web_core_vitals';
 import { hasRumData } from './has_rum_data';
@@ -368,6 +368,7 @@ const rumJSErrors = createApmServerRoute({
   },
 });
 
+// Endpoint used by Ux Dashboard -> User Sessions table to retrieve the top ten most recent user sessions
 const rumUserSessions = createApmServerRoute({
   endpoint: 'GET /internal/apm/ux/user-sessions',
   params: t.type({
@@ -399,6 +400,31 @@ const rumUserSessions = createApmServerRoute({
       setup,
       start,
       end,
+    });
+  },
+});
+
+// This endpoint will be used by the Uptime Add Monitor page to retrieve script for a sessionId
+const rumUserSessionsScript = createApmServerRoute({
+  endpoint: 'GET /internal/apm/ux/user-session-script',
+  params: t.type({
+    query: t.type({
+      sessionId: t.string,
+    }),
+  }),
+  options: { tags: ['access:apm'] },
+  handler: async (
+    resources
+  ): Promise<{
+    inlineScript: string;
+  }> => {
+    const {
+      query: { sessionId },
+    } = resources.params;
+
+    return getScriptForSessionId({
+      esClient: resources.context.core.elasticsearch.client.asCurrentUser,
+      sessionId,
     });
   },
 });
@@ -469,5 +495,6 @@ export const rumRouteRepository = {
   ...rumUrlSearch,
   ...rumJSErrors,
   ...rumUserSessions,
+  ...rumUserSessionsScript,
   ...rumHasDataRoute,
 };

@@ -5,6 +5,7 @@
  * 2.0.
  */
 
+import { ElasticsearchClient } from 'kibana/server';
 import { SetupUX } from './route';
 
 export async function getUserSessions({
@@ -21,18 +22,23 @@ export async function getUserSessions({
   const esResponse = await apmEventClient.getUserSessions(start, end);
 
   // Process raw ES response here if necessary
-  // For simplicity, we can fetch all instructions per sessionId and generate the journey script and add it in
-  // the record before returning
 
-  const items = esResponse;
-  const itemsWithScript = items.map((i: object) => ({
-    ...i,
-    inlineScript: `
+  return { items: esResponse };
+}
+
+export async function getScriptForSessionId({
+  esClient,
+  sessionId,
+}: {
+  esClient: ElasticsearchClient;
+  sessionId: string;
+}) {
+  // TODO: Retrieve documents from es via apmClient and generate script
+  const inlineScript = `
       step('Goto Amazon', () => {
         page.goto('https://amazon.com');
       });
-    `,
-  }));
+    `;
 
-  return { items: itemsWithScript };
+  return { inlineScript };
 }
