@@ -385,6 +385,7 @@ const rumUserSessions = createApmServerRoute({
   ): Promise<{
     items: Array<{
       sessionId: string;
+      url: string;
       startedAt: number;
       duration: number;
       isActive: boolean;

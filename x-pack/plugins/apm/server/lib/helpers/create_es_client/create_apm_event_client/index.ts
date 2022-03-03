@@ -193,9 +193,11 @@ export class APMEventClient {
         const startedAt = sessionRecords?.[0]?.timestamp ?? 0;
         const endedAt = sessionRecords?.[nHits - 1]?.timestamp ?? 0;
         const isActive = new Date().getTime() - endedAt < 2 * 1000 * 60;
+        const url = sessionRecords?.[0]?.data?.href ?? '';
 
         return {
           sessionId,
+          url,
           startedAt,
           duration: endedAt - startedAt,
           isActive,

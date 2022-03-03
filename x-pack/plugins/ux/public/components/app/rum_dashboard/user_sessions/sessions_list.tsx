@@ -56,6 +56,11 @@ export function SessionsList() {
       render: (sessionId: string) => <EuiText size="xs">{sessionId}</EuiText>,
     },
     {
+      field: 'url',
+      name: 'Url',
+      render: (url: string) => <EuiText size="xs">{url}</EuiText>,
+    },
+    {
       field: 'startedAt',
       name: 'Started',
       render: (startedAt: number) => (
