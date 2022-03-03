@@ -24,6 +24,7 @@ export interface UptimeUrlParams {
   statusFilter: string;
   focusConnectorField?: boolean;
   query?: string;
+  rumSessionId?: string;
 }
 
 const {

@@ -5,14 +5,16 @@
  * 2.0.
  */
 
-import React from 'react';
 import { i18n } from '@kbn/i18n';
-import { useTrackPageview } from '../../../../observability/public';
-import { ScheduleUnit } from '../../../common/runtime_types';
+import React from 'react';
+import { useLocation } from 'react-use/lib';
+import { useFetcher, useTrackPageview } from '../../../../observability/public';
+import { DataStream, ScheduleUnit } from '../../../common/runtime_types';
 import { SyntheticsProviders } from '../../components/fleet_package/contexts';
+import { useLocations } from '../../components/monitor_management/hooks/use_locations';
 import { Loader } from '../../components/monitor_management/loader/loader';
 import { MonitorConfig } from '../../components/monitor_management/monitor_config/monitor_config';
-import { useLocations } from '../../components/monitor_management/hooks/use_locations';
+import { apiService } from '../../state/api/utils';
 import { useMonitorManagementBreadcrumbs } from './use_monitor_management_breadcrumbs';
 
 export const AddMonitorPage: React.FC = () => {
@@ -22,6 +24,19 @@ export const AddMonitorPage: React.FC = () => {
   const { error, loading, locations } = useLocations();
 
   useMonitorManagementBreadcrumbs({ isAddMonitor: true });
+
+  const { search } = useLocation();
+  const rumSessionId = new URLSearchParams(search).get('rumSessionId');
+
+  const { data: browserData, loading: inlineScriptLoading } = useFetcher(() => {
+    if (!rumSessionId) {
+      return null;
+    }
+
+    return apiService.get('/internal/apm/ux/user-session-script', {
+      sessionId: rumSessionId,
+    });
+  }, [rumSessionId]);
 
   return (
     <Loader
@@ -35,6 +50,12 @@ export const AddMonitorPage: React.FC = () => {
         policyDefaultValues={{
           isZipUrlSourceEnabled: false,
           allowedScheduleUnits: [ScheduleUnit.MINUTES],
+          defaultMonitorType: rumSessionId ? DataStream.BROWSER : DataStream.HTTP,
+          defaultName: rumSessionId ? `RUM Session ${rumSessionId}` : '',
+          defaultInlineScript:
+            browserData && rumSessionId && !inlineScriptLoading
+              ? (browserData as any)?.inlineScript ?? ''
+              : '',
         }}
       >
         <MonitorConfig isEdit={false} />

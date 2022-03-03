@@ -90,6 +90,12 @@ export const SourceField = ({ onChange, onFieldBlur, defaultConfig = defaultValu
     />
   );
 
+  useEffect(() => {
+    if (defaultConfig?.inlineScript) {
+      setConfig((prevState) => ({ ...prevState, inlineScript: defaultConfig.inlineScript }));
+    }
+  }, [defaultConfig?.inlineScript]);
+
   const zipUrlSourceTabId = 'syntheticsBrowserZipURLConfig';
   const allTabs = [
     {

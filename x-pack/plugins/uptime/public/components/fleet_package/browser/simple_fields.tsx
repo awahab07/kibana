@@ -10,7 +10,7 @@ import { FormattedMessage } from '@kbn/i18n-react';
 import { EuiFormRow } from '@elastic/eui';
 import { Validation } from '../types';
 import { ConfigKey } from '../types';
-import { useBrowserSimpleFieldsContext } from '../contexts';
+import { useBrowserSimpleFieldsContext, usePolicyConfigContext } from '../contexts';
 import { ScheduleField } from '../schedule_field';
 import { SourceField } from './source_field';
 import { SimpleFieldsWrapper } from '../common/simple_fields_wrapper';
@@ -21,7 +21,24 @@ interface Props {
 }
 
 export const BrowserSimpleFields = memo<Props>(({ validate, onFieldBlur }) => {
+  const { defaultInlineScript } = usePolicyConfigContext();
   const { fields, setFields, defaultValues } = useBrowserSimpleFieldsContext();
+
+  const sourceConfig = useMemo(
+    () => ({
+      zipUrl: defaultValues[ConfigKey.SOURCE_ZIP_URL],
+      proxyUrl: defaultValues[ConfigKey.SOURCE_ZIP_PROXY_URL],
+      folder: defaultValues[ConfigKey.SOURCE_ZIP_FOLDER],
+      username: defaultValues[ConfigKey.SOURCE_ZIP_USERNAME],
+      password: defaultValues[ConfigKey.SOURCE_ZIP_PASSWORD],
+      inlineScript: defaultInlineScript ?? defaultValues[ConfigKey.SOURCE_INLINE],
+      params: defaultValues[ConfigKey.PARAMS],
+      isGeneratedScript: defaultValues[ConfigKey.METADATA].script_source?.is_generated_script,
+      fileName: defaultValues[ConfigKey.METADATA].script_source?.file_name,
+    }),
+    [defaultValues, defaultInlineScript]
+  );
+
   const handleInputChange = useCallback(
     ({ value, configKey }: { value: unknown; configKey: ConfigKey }) => {
       setFields((prevFields) => ({ ...prevFields, [configKey]: value }));
@@ -107,21 +124,7 @@ export const BrowserSimpleFields = memo<Props>(({ validate, onFieldBlur }) => {
         <SourceField
           onChange={onChangeSourceField}
           onFieldBlur={onFieldBlur}
-          defaultConfig={useMemo(
-            () => ({
-              zipUrl: defaultValues[ConfigKey.SOURCE_ZIP_URL],
-              proxyUrl: defaultValues[ConfigKey.SOURCE_ZIP_PROXY_URL],
-              folder: defaultValues[ConfigKey.SOURCE_ZIP_FOLDER],
-              username: defaultValues[ConfigKey.SOURCE_ZIP_USERNAME],
-              password: defaultValues[ConfigKey.SOURCE_ZIP_PASSWORD],
-              inlineScript: defaultValues[ConfigKey.SOURCE_INLINE],
-              params: defaultValues[ConfigKey.PARAMS],
-              isGeneratedScript:
-                defaultValues[ConfigKey.METADATA].script_source?.is_generated_script,
-              fileName: defaultValues[ConfigKey.METADATA].script_source?.file_name,
-            }),
-            [defaultValues]
-          )}
+          defaultConfig={sourceConfig}
         />
       </EuiFormRow>
     </SimpleFieldsWrapper>

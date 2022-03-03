@@ -143,14 +143,65 @@ export class APMEventClient {
     // TODO: Use a raw es query here using this.esClient and on the synthplay index to get
     // all the user sessions within range 'start' and 'end'
 
-    return Promise.resolve([
-      {
-        sessionId: 'some378-343mf-34-df-d-3uuf',
-        startedAt: 1646219699266,
-        duration: 2000,
-        isActive: false,
+    const { aggregations, hits } = await this.esClient.search<any>({
+      index: 'synthplay_test',
+      size: 10000,
+      body: {
+        aggs: {
+          sessions: {
+            terms: {
+              field: 'enriched.sessionId.keyword',
+              size: 10,
+              order: {
+                latestOrder: 'desc',
+              },
+            },
+            aggs: {
+              latestOrder: {
+                max: {
+                  field: 'timestamp',
+                },
+              },
+            },
+          },
+        },
       },
-    ]);
+    });
+
+    const sessionIds = ((aggregations?.sessions as any)?.buckets ?? []).map(
+      ({ key }: { key: string }) => key
+    );
+
+    const sessionRecordsMap = sessionIds.reduce(
+      (acc: Map<string, object>, cur: string) => {
+        const sessionHits = hits.hits
+          .filter(({ _source }: any) => _source.enriched.sessionId === cur)
+          .map(({ _source }: any) => _source);
+
+        sessionHits.sort((a: any, b: any) => a.timestamp - b.timestamp);
+
+        acc.set(cur, sessionHits);
+        return acc;
+      },
+      new Map()
+    );
+
+    return Promise.resolve(
+      sessionIds.map((sessionId: string) => {
+        const sessionRecords = sessionRecordsMap.get(sessionId) ?? [];
+        const nHits = sessionRecords.length;
+        const startedAt = sessionRecords?.[0]?.timestamp ?? 0;
+        const endedAt = sessionRecords?.[nHits - 1]?.timestamp ?? 0;
+        const isActive = new Date().getTime() - endedAt < 2 * 1000 * 60;
+
+        return {
+          sessionId,
+          startedAt,
+          duration: endedAt - startedAt,
+          isActive,
+        };
+      })
+    );
   }
 
   async termsEnum(

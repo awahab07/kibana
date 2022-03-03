@@ -6,6 +6,8 @@
  */
 
 import { ElasticsearchClient } from 'kibana/server';
+import { SyntheticsGenerator } from '@elastic/synthetics/dist/formatter/javascript';
+import { createSyntheticActions } from '../../lib/helpers/rum_to_synthetics';
 import { SetupUX } from './route';
 
 export async function getUserSessions({
@@ -33,12 +35,35 @@ export async function getScriptForSessionId({
   esClient: ElasticsearchClient;
   sessionId: string;
 }) {
-  // TODO: Retrieve documents from es via apmClient and generate script
-  const inlineScript = `
-      step('Goto Amazon', () => {
-        page.goto('https://amazon.com');
-      });
-    `;
+  const { hits } = await esClient.search<any>({
+    index: 'synthplay_test',
+    size: 10000,
+    body: {
+      query: {
+        term: {
+          'enriched.sessionId.keyword': {
+            value: sessionId,
+            boost: 1.0,
+          },
+        },
+      },
+      sort: [
+        {
+          timestamp: {
+            order: 'asc',
+          },
+        },
+      ],
+    },
+  });
+
+  const rumInstructions = hits.hits.map(({ _source }) => _source);
+
+  const synthInstructions = createSyntheticActions(rumInstructions);
+
+  const synthGenerator = new SyntheticsGenerator(false);
+
+  const inlineScript = synthGenerator.generateText(synthInstructions);
 
   return { inlineScript };
 }

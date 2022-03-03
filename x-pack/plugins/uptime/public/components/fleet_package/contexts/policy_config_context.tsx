@@ -31,6 +31,7 @@ interface IPolicyConfigContext {
   locations?: ServiceLocations;
   allowedScheduleUnits?: ScheduleUnit[];
   defaultNamespace?: string;
+  defaultInlineScript?: string;
   namespace?: string;
 }
 
@@ -42,6 +43,7 @@ export interface IPolicyConfigContextProvider {
   defaultName?: string;
   defaultLocations?: ServiceLocations;
   defaultNamespace?: string;
+  defaultInlineScript?: string;
   isEditable?: boolean;
   isZipUrlSourceEnabled?: boolean;
   allowedScheduleUnits?: ScheduleUnit[];
@@ -80,6 +82,7 @@ const defaultContext: IPolicyConfigContext = {
   isZipUrlSourceEnabled: true,
   allowedScheduleUnits: [ScheduleUnit.MINUTES, ScheduleUnit.SECONDS],
   defaultNamespace: DEFAULT_NAMESPACE_STRING,
+  defaultInlineScript: '',
 };
 
 export const PolicyConfigContext = createContext(defaultContext);
@@ -95,6 +98,7 @@ export function PolicyConfigContextProvider<ExtraFields = unknown>({
   isEditable = false,
   isZipUrlSourceEnabled = true,
   allowedScheduleUnits = [ScheduleUnit.MINUTES, ScheduleUnit.SECONDS],
+  defaultInlineScript = undefined,
 }: IPolicyConfigContextProvider) {
   const [monitorType, setMonitorType] = useState<DataStream>(defaultMonitorType);
   const [name, setName] = useState<string>(defaultName);
@@ -125,6 +129,7 @@ export function PolicyConfigContextProvider<ExtraFields = unknown>({
       allowedScheduleUnits,
       namespace,
       setNamespace,
+      defaultInlineScript,
     } as IPolicyConfigContext;
   }, [
     monitorType,
@@ -141,6 +146,7 @@ export function PolicyConfigContextProvider<ExtraFields = unknown>({
     defaultLocations,
     allowedScheduleUnits,
     namespace,
+    defaultInlineScript,
   ]);
 
   return <PolicyConfigContext.Provider value={value} children={children} />;
