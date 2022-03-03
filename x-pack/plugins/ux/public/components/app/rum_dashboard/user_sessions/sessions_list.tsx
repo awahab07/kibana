@@ -6,18 +6,27 @@
  */
 
 import React from 'react';
+import moment from 'moment';
 import {
   EuiBasicTable,
   EuiFlexItem,
   EuiFlexGroup,
   EuiSpacer,
   EuiTitle,
+  EuiLink,
+  EuiText,
+  EuiToolTip,
+  EuiIcon,
+  useEuiTheme,
 } from '@elastic/eui';
 import { useLegacyUrlParams } from '../../../../context/url_params_context/use_url_params';
 import { useFetcher } from '../../../../hooks/use_fetcher';
 import { FETCH_STATUS } from '../../../../../../observability/public';
+import { useKibanaServices } from '../../../../hooks/use_kibana_services';
 
 export function SessionsList() {
+  const { euiTheme } = useEuiTheme();
+  const basePath = useKibanaServices().http.basePath;
   const { urlParams, uxUiFilters } = useLegacyUrlParams();
 
   const { start, end } = urlParams;
@@ -44,22 +53,52 @@ export function SessionsList() {
     {
       field: 'sessionId',
       name: 'Session ID',
+      render: (sessionId: string) => <EuiText size="xs">{sessionId}</EuiText>,
     },
     {
       field: 'startedAt',
       name: 'Started',
+      render: (startedAt: number) => (
+        <EuiToolTip content={moment(startedAt).format('YYYY-MM-DD HH:mm:ss')}>
+          <EuiText size="s">{moment(startedAt).fromNow()}</EuiText>
+        </EuiToolTip>
+      ),
     },
     {
       field: 'duration',
-      name: 'Duration',
+      name: 'Duration (m)',
+      render: (duration: number) => (
+        <EuiText size="s">{(duration / 1000 / 60).toFixed(2)}</EuiText>
+      ),
     },
     {
       field: 'isActive',
       name: 'Active',
+      render: (isActive: boolean) => (
+        <EuiIcon
+          type="dot"
+          color={isActive ? euiTheme.colors.success : euiTheme.colors.disabled}
+        />
+      ),
     },
     {
       field: '',
       name: 'Actions',
+      render: ({ sessionId }: { sessionId: string }) => (
+        <EuiFlexGroup>
+          <EuiFlexItem>
+            <EuiLink
+              href={basePath.prepend(
+                `uptime/add-monitor?rumSessionId=${sessionId}`
+              )}
+              target="_blank"
+              external={true}
+            >
+              Create Synthetics Test
+            </EuiLink>
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      ),
     },
   ];
 
