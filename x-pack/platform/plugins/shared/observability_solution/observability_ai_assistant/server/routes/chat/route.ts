@@ -6,8 +6,10 @@
  */
 import { notImplemented } from '@hapi/boom';
 import { toBooleanRt } from '@kbn/io-ts-utils';
+import { BooleanFromString } from '@kbn/zod-helpers';
 import { context as otelContext } from '@opentelemetry/api';
 import * as t from 'io-ts';
+import { z } from '@kbn/zod';
 import { from, map } from 'rxjs';
 import { Readable } from 'stream';
 import { AssistantScope } from '@kbn/ai-assistant-common';
@@ -21,7 +23,15 @@ import { observableIntoStream } from '../../service/util/observable_into_stream'
 import { withAssistantSpan } from '../../service/util/with_assistant_span';
 import { recallAndScore } from '../../utils/recall/recall_and_score';
 import { createObservabilityAIAssistantServerRoute } from '../create_observability_ai_assistant_server_route';
-import { assistantScopeType, functionRt, messageRt, screenContextRt } from '../runtime_types';
+import {
+  assistantScopeType,
+  assistantScopeZod,
+  functionRt,
+  messageRt,
+  messageZod,
+  screenContextRt,
+  screenContextZod,
+} from '../runtime_types';
 import { ObservabilityAIAssistantRouteHandlerResources } from '../types';
 
 const chatCompleteBaseRt = t.type({
@@ -56,7 +66,7 @@ const chatCompleteBaseRt = t.type({
   ]),
 });
 
-const chatCompleteInternalRt = t.intersection([
+export const chatCompleteInternalRt = t.intersection([
   chatCompleteBaseRt,
   t.type({
     body: t.type({
@@ -65,6 +75,43 @@ const chatCompleteInternalRt = t.intersection([
     }),
   }),
 ]);
+
+const chatCompleteBaseZod = z.object({
+  body: z.object({
+    messages: z.array(messageZod),
+    connectorId: z.string(),
+    persist: BooleanFromString,
+    conversationId: z.string().optional(),
+    title: z.string().optional(),
+    disableFunctions: z
+      .union([
+        BooleanFromString,
+        z.object({
+          except: z.array(z.string()),
+        }),
+      ])
+      .optional(),
+    instructions: z
+      .array(
+        z.object({
+          id: z.string().optional(),
+          text: z.string(),
+          instruction_type: z.union([
+            z.literal('user_instruction'),
+            z.literal('application_instruction'),
+          ]),
+        })
+      )
+      .optional(),
+  }),
+});
+
+export const chatCompleteInternalZod = chatCompleteBaseZod.extend({
+  body: z.object({
+    screenContexts: z.array(screenContextZod),
+    scopes: z.array(assistantScopeZod),
+  }),
+});
 
 const chatCompletePublicRt = t.intersection([
   chatCompleteBaseRt,
@@ -293,7 +340,7 @@ const chatCompleteRoute = createObservabilityAIAssistantServerRoute({
       requiredPrivileges: ['ai_assistant'],
     },
   },
-  params: chatCompleteInternalRt,
+  params: chatCompleteInternalZod,
   handler: async (resources): Promise<Readable> => {
     return observableIntoStream(await chatComplete(resources));
   },
