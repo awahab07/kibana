@@ -494,13 +494,21 @@ export default function ApiTest({ getService }: DeploymentAgnosticFtrProviderCon
       describe('after deleting a specific data set', () => {
         before(async () => {
           await es.deleteByQuery({
-            index: 'metrics-apm.transaction.1m-*',
+            index: 'metrics-apm*',
             query: {
-              range: {
-                '@timestamp': {
-                  gte: moment(start).subtract(1, 'day').toISOString(),
-                  lte: end.toISOString(),
-                },
+              bool: {
+                filter: [
+                  {
+                    terms: {
+                      'metricset.name': ['transaction'],
+                    },
+                  },
+                  {
+                    term: {
+                      'metricset.interval': '1m',
+                    },
+                  },
+                ],
               },
             },
             refresh: true,
