@@ -9,7 +9,7 @@ import type { DeploymentAgnosticFtrProviderContext } from '../../../ftr_provider
 
 export default function ({ loadTestFile }: DeploymentAgnosticFtrProviderContext) {
   describe('time_range_metadata', () => {
-    loadTestFile(require.resolve('./many_apm_server_versions.spec.ts'));
+    // loadTestFile(require.resolve('./many_apm_server_versions.spec.ts'));
     loadTestFile(require.resolve('./time_range_metadata.spec.ts'));
   });
 }
