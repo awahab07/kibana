@@ -508,14 +508,6 @@ export default function ApiTest({ getService }: DeploymentAgnosticFtrProviderCon
                       'metricset.interval': '1m',
                     },
                   },
-                  {
-                    range: {
-                      '@timestamp': {
-                        gte: moment(start).subtract(1, 'day').toISOString(),
-                        lte: end.toISOString(),
-                      },
-                    },
-                  },
                 ],
               },
             },
