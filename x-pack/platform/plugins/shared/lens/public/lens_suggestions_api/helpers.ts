@@ -141,6 +141,21 @@ export function mergeSuggestionWithVisContext({
   );
 
   if (hasInvalidColumns) {
+    // Columns changed — we can't reuse the old datasource state or layer accessors,
+    // but we can preserve column-independent appearance settings (legend, axis, grid, etc.)
+    if (suggestion.visualizationId === visAttributes.visualizationType) {
+      const savedVizState = visAttributes.state.visualization as Record<string, unknown>;
+      const suggestionVizState = suggestion.visualizationState as Record<string, unknown>;
+      // Only merge properties that don't reference columns (skip layers, accessors, etc.)
+      const { layers, ...appearanceSettings } = savedVizState;
+      return {
+        ...suggestion,
+        visualizationState: {
+          ...suggestionVizState,
+          ...appearanceSettings,
+        },
+      };
+    }
     return suggestion;
   }
 
