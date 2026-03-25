@@ -42,7 +42,7 @@ import type { EventAnnotationConfig } from '@kbn/event-annotation-common';
 import type { SystemPaletteExpressionFunctionDefinition } from '@kbn/charts-plugin/common';
 import type { OperationMetadata, DatasourcePublicAPI, DatasourceLayers } from '@kbn/lens-common';
 import type {
-  XYState,
+  XYVisualizationState,
   YConfig,
   XYDataLayerConfig,
   XYReferenceLineLayerConfig,
@@ -72,7 +72,7 @@ import { hasIcon } from './xy_config_panel/shared/marker_decoration_settings';
 
 type XYLayerConfigWithSimpleView = XYLayerConfig & { simpleView?: boolean };
 type XYAnnotationLayerConfigWithSimpleView = XYAnnotationLayerConfig & { simpleView?: boolean };
-type State = Omit<XYState, 'layers'> & { layers: XYLayerConfigWithSimpleView[] };
+type State = Omit<XYVisualizationState, 'layers'> & { layers: XYLayerConfigWithSimpleView[] };
 
 export const getSortedAccessors = (
   datasource: DatasourcePublicAPI | undefined,
@@ -312,7 +312,7 @@ export const buildXYExpression = (
         ? Math.min(5, state.legend.floatingColumns)
         : [],
     maxLines: state.legend.maxLines,
-    listLayoutMaxWidth: state.legend.listLayoutMaxWidth,
+    maxPixels: state.legend.maxPixels,
     legendStats: state.legend.legendStats,
     title: state.legend.title,
     isTitleVisible: state.legend.isTitleVisible,
