@@ -1685,7 +1685,7 @@ describe('xy_suggestions', () => {
 
   describe('preserves chart-level config when columns change', () => {
     test('preserves legend, axis titles, fitting function, and other chart-level settings', () => {
-      const currentState: XYState = {
+      const currentState: XYVisualizationState = {
         legend: { isVisible: false, position: 'bottom' },
         valueLabels: 'show',
         preferredSeriesType: 'line',
@@ -1775,7 +1775,7 @@ describe('xy_suggestions', () => {
     });
 
     test('preserves chart-level settings when columns are added', () => {
-      const currentState: XYState = {
+      const currentState: XYVisualizationState = {
         legend: { isVisible: false, position: 'left' },
         valueLabels: 'show',
         preferredSeriesType: 'area',
@@ -1826,7 +1826,7 @@ describe('xy_suggestions', () => {
     });
 
     test('preserves chart-level settings for textBased datasource with isMultiRow: false', () => {
-      const currentState: XYState = {
+      const currentState: XYVisualizationState = {
         legend: { isVisible: false, position: 'bottom' },
         valueLabels: 'show',
         preferredSeriesType: 'line',
