@@ -501,8 +501,14 @@ function getSeriesType(
   const oldLayer = getExistingLayer(currentState, layerId);
   const oldLayerSeriesType = oldLayer && isDataLayer(oldLayer) ? oldLayer.seriesType : false;
 
+  const firstSeriesTypeInDataLayer = currentState
+    ? getDataLayers(currentState.layers)[0]?.seriesType
+    : undefined;
   const closestSeriesType =
-    oldLayerSeriesType || (currentState && currentState.preferredSeriesType) || defaultSeriesType;
+    oldLayerSeriesType ||
+    firstSeriesTypeInDataLayer ||
+    (currentState && currentState.preferredSeriesType) ||
+    defaultSeriesType;
 
   // Attempt to keep the seriesType consistent on initial add of a layer
   // Ordinal scales should always use a bar because there is no interpolation between buckets

@@ -1877,5 +1877,43 @@ describe('xy_suggestions', () => {
       expect(dataLayer.accessors).toContain('maxBytes');
       expect(dataLayer.xAccessor).toBe('date');
     });
+
+    test('preserves seriesType from existing data layers when layerId changes', () => {
+      const currentState: XYVisualizationState = {
+        legend: { isVisible: true, position: 'right' },
+        valueLabels: 'hide',
+        // Simulate a state where seriesType is stored on the layer (horizontal bars),
+        // but the preferredSeriesType doesn't include the horizontal orientation.
+        preferredSeriesType: 'bar_stacked',
+        layers: [
+          {
+            layerId: 'oldLayer',
+            layerType: LayerTypes.DATA,
+            seriesType: 'bar_horizontal_stacked',
+            xAccessor: 'date',
+            accessors: ['metric'],
+            splitAccessors: undefined,
+          },
+        ],
+      };
+
+      const suggestions = getSuggestions({
+        table: {
+          isMultiRow: true,
+          columns: [numCol('newMetric'), dateCol('newDate')],
+          layerId: 'newLayer',
+          changeType: 'extended',
+        },
+        keptLayerIds: ['newLayer'],
+        state: currentState,
+      });
+
+      expect(suggestions.length).toBeGreaterThan(0);
+      const suggestion = suggestions[0];
+
+      expect(suggestion.state.preferredSeriesType).toBe('bar_horizontal_stacked');
+      const dataLayer = suggestion.state.layers[0] as XYDataLayerConfig;
+      expect(dataLayer.seriesType).toBe('bar_horizontal_stacked');
+    });
   });
 });
