@@ -23,6 +23,8 @@ import { processRemoveByPrefixProcessor } from './processors/remove_by_prefix_pr
 import type { IngestPipelineTranspilationOptions } from '.';
 import { processJoinProcessor } from './processors/join_processor';
 import { processConcatProcessor } from './processors/concat_processor';
+import { processSortProcessor } from './processors/sort_processor';
+import { processJsonExtractProcessor } from './processors/json_extract_processor';
 
 export function convertStreamlangDSLActionsToIngestPipelineProcessors(
   actionSteps: StreamlangProcessorDefinition[],
@@ -91,6 +93,20 @@ export function convertStreamlangDSLActionsToIngestPipelineProcessors(
       return processConcatProcessor(
         processorWithCompiledConditions as Parameters<typeof processConcatProcessor>[0]
       );
+    }
+
+    if (action === 'sort') {
+      return processSortProcessor(
+        processorWithCompiledConditions as Parameters<typeof processSortProcessor>[0]
+      );
+    }
+
+    if (action === 'json_extract') {
+      return [
+        processJsonExtractProcessor(
+          processorWithCompiledConditions as Parameters<typeof processJsonExtractProcessor>[0]
+        ),
+      ];
     }
 
     return applyPreProcessing(action, processorWithCompiledConditions as IngestPipelineProcessor);
