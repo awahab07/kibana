@@ -9,27 +9,26 @@ import type { UseEuiTheme } from '@elastic/eui';
 import { css } from '@emotion/react';
 
 /**
- * OpenType font features for improved numeric readability in charts.
- * - `tnum` (tabular-nums): Fixed-width numbers for aligned columns
- * - `zero` (slashed-zero): Distinguishes zero from letter O
- * - `ss01`: Open digits stylistic set
- * - `ss07`: Squared punctuation stylistic set
+ * Font stack for Lens charts with enhanced numeric rendering.
+ *
+ * "Elastic UI Numeric" is a derivative font with OpenType features (tnum, zero, ss01, ss07)
+ * baked into the default glyphs. Using unicode-range, it only applies to numeric characters,
+ * while letters fall through to the standard Inter font.
+ *
+ * This approach works on all browsers including Firefox's canvas implementation, which does not
+ * support CSS font-feature-settings for canvas text rendering.
  *
  * @see https://github.com/elastic/kibana/issues/249382
  */
-const fontFeatureSettings = "'tnum', 'zero', 'ss01', 'ss07'";
-const fontVariantNumeric = 'tabular-nums slashed-zero';
-const numericFontFeatures = css`
-  font-feature-settings: ${fontFeatureSettings};
-  font-variant-numeric: ${fontVariantNumeric};
+const chartsNumericFontStyles = ({ euiTheme }: UseEuiTheme) => css`
+  font-family: 'Elastic UI Numeric', ${euiTheme.font.family};
 
-  // Override user agent form element font features inheritance
+  // Override user agent styles for form elements
   button,
   input,
   select,
   textarea {
-    font-variant-numeric: inherit;
-    font-feature-settings: inherit;
+    font-family: inherit;
   }
 `;
 
@@ -40,7 +39,7 @@ export const lnsExpressionRendererStyle = (euiThemeContext: UseEuiTheme) => {
     height: 100%;
     display: flex;
     overflow: auto;
-    ${numericFontFeatures}
+    ${chartsNumericFontStyles(euiThemeContext)}
   `;
 };
 
@@ -48,13 +47,8 @@ export const lnsExpressionRendererStyle = (euiThemeContext: UseEuiTheme) => {
  * Global styles for elastic-charts elements rendered via portals (tooltips, annotations).
  * These elements are rendered outside the Lens DOM tree and need global targeting.
  */
-export const lnsGlobalChartStyles = css`
+export const lnsGlobalChartStyles = (euiThemeContext: UseEuiTheme) => css`
   [id^='echTooltipPortal'] {
-    ${numericFontFeatures}
-
-    // Override elastic-charts .echTooltip__value which sets font-feature-settings: "tnum"
-    .echTooltip__value {
-      font-feature-settings: ${fontFeatureSettings};
-    }
+    ${chartsNumericFontStyles(euiThemeContext)}
   }
 `;
