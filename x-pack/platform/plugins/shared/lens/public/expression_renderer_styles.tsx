@@ -9,21 +9,13 @@ import type { UseEuiTheme } from '@elastic/eui';
 import { css } from '@emotion/react';
 
 /**
- * Font stack for Lens charts with enhanced numeric rendering.
- *
- * "Elastic UI Numeric" is a derivative font with OpenType features (tnum, zero, ss01, ss07)
- * baked into the default glyphs. Using unicode-range, it only applies to numeric characters,
- * while letters fall through to the standard Inter font.
- *
- * This approach works on all browsers including Firefox's canvas implementation, which does not
- * support CSS font-feature-settings for canvas text rendering.
- *
- * @see https://github.com/elastic/kibana/issues/249382
+ * Lens-specific styles to ensure chart text uses the numeric font stack.
  */
-const chartsNumericFontStyles = ({ euiTheme }: UseEuiTheme) => css`
+const lnsNumericFontStyles = ({ euiTheme }: UseEuiTheme) => css`
   font-family: 'Elastic UI Numeric', ${euiTheme.font.family};
 
-  // Override user agent styles for form elements
+  // Some browsers apply user agent styles to form elements (e.g. buttons), which can reset the
+  // effective font stack. Force inheritance so numeric glyph fallback works consistently.
   button,
   input,
   select,
@@ -39,7 +31,7 @@ export const lnsExpressionRendererStyle = (euiThemeContext: UseEuiTheme) => {
     height: 100%;
     display: flex;
     overflow: auto;
-    ${chartsNumericFontStyles(euiThemeContext)}
+    ${lnsNumericFontStyles(euiThemeContext)}
   `;
 };
 
@@ -49,6 +41,6 @@ export const lnsExpressionRendererStyle = (euiThemeContext: UseEuiTheme) => {
  */
 export const lnsGlobalChartStyles = (euiThemeContext: UseEuiTheme) => css`
   [id^='echTooltipPortal'] {
-    ${chartsNumericFontStyles(euiThemeContext)}
+    ${lnsNumericFontStyles(euiThemeContext)}
   }
 `;

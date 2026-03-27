@@ -15,30 +15,7 @@ import type { CoreSetup, CoreTheme } from '@kbn/core/public';
 import type { PartialTheme, Theme } from '@elastic/charts';
 import { LIGHT_THEME, getChartsTheme } from '@elastic/charts';
 
-const ELASTIC_UI_NUMERIC_FONT_FAMILY = "'Elastic UI Numeric'";
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
-
-const applyNumericFontFamily = (value: unknown): void => {
-  if (Array.isArray(value)) {
-    value.forEach(applyNumericFontFamily);
-    return;
-  }
-
-  if (!isRecord(value)) return;
-
-  for (const [key, entry] of Object.entries(value)) {
-    if (key === 'fontFamily' && typeof entry === 'string') {
-      value[key] = entry.includes(ELASTIC_UI_NUMERIC_FONT_FAMILY)
-        ? entry
-        : `${ELASTIC_UI_NUMERIC_FONT_FAMILY}, ${entry}`;
-      continue;
-    }
-
-    applyNumericFontFamily(entry);
-  }
-};
+import { applyNumericFontFamily } from './helpers';
 
 export class ThemeService {
   /** Returns default charts theme */

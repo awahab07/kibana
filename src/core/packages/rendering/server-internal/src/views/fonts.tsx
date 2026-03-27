@@ -16,15 +16,19 @@ interface Props {
   url: RenderingMetadata['uiPublicUrl'];
 }
 
+type FontFaceWeightValue = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
+type FontFaceWeight = FontFaceWeightValue | `${FontFaceWeightValue} ${FontFaceWeightValue}`;
+type FontFaceDisplay = 'swap' | 'auto' | 'block' | 'fallback' | 'optional';
+
 interface FontFace {
   family: string;
   variants: Array<{
     style: 'normal' | 'italic';
-    weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | '100 900';
+    weight: FontFaceWeight;
     sources: string[];
     unicodeRange?: string;
     format?: string;
-    display?: 'swap' | 'auto' | 'block' | 'fallback' | 'optional';
+    display?: FontFaceDisplay;
   }>;
 }
 
@@ -37,6 +41,9 @@ interface FontFace {
  * The font only contains numeric characters and common punctuation, using unicode-range
  * to apply only to those characters. When used alongside Inter, numeric characters
  * will render with the enhanced features while letters use standard Inter.
+ *
+ * Future numeric/typographic enhancements for charts can be added to this font family while
+ * keeping the public API stable (hence the generic name).
  *
  * @see https://github.com/elastic/kibana/issues/249382
  */
@@ -233,22 +240,17 @@ export const Fonts: FunctionComponent<Props> = ({ url }) => {
                 )
                 .join(', ');
 
+              const fontDisplayDeclaration = display ? `\n          font-display: ${display};` : '';
+              const unicodeRangeDeclaration = unicodeRange
+                ? `\n          unicode-range: ${unicodeRange};`
+                : '';
+
               return `
         @font-face {
           font-family: '${family}';
           font-style: ${style};
-          font-weight: ${weight};${
-                display
-                  ? `
-          font-display: ${display};`
-                  : ''
-              }
-          src: ${src};${
-                unicodeRange
-                  ? `
-          unicode-range: ${unicodeRange};`
-                  : ''
-              }
+          font-weight: ${weight};${fontDisplayDeclaration}
+          src: ${src};${unicodeRangeDeclaration}
         }`;
             })
           )
