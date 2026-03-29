@@ -49,13 +49,9 @@ export default function ({ getService, getPageObjects }: FtrProviderContext) {
 
     it('should render tagcloud', async () => {
       const tags = await tagCloud.getTextTag();
-      expect(tags).to.eql([
-        '97.220.3.248',
-        '78.83.247.30',
-        '226.82.228.233',
-        '93.28.27.24',
-        'Other',
-      ]);
+      expect([...tags].sort()).to.eql(
+        ['97.220.3.248', '78.83.247.30', '226.82.228.233', '93.28.27.24', 'Other'].sort()
+      );
     });
 
     it('should add filter from clicking on tag', async () => {

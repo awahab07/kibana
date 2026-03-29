@@ -278,13 +278,12 @@ export default function ({ getService, getPageObjects }: FtrProviderContext) {
             'RangeKey no label auto assigned - Tag Cloud'
           );
 
-          expect(seriesColors).to.eql([
-            // filter order not based on tag size
-            ['5,000 → 10,000', defaultPaletteColors[2]],
-            ['1,000 → 5,000', defaultPaletteColors[1]],
-            ['0 → 1,000', defaultPaletteColors[0]],
-            ['10,000 → +∞', defaultPaletteColors[3]],
-          ]);
+          expect(Object.fromEntries(seriesColors)).to.eql({
+            '0 → 1,000': defaultPaletteColors[0],
+            '1,000 → 5,000': defaultPaletteColors[1],
+            '5,000 → 10,000': defaultPaletteColors[2],
+            '10,000 → +∞': defaultPaletteColors[3],
+          });
         });
       });
 

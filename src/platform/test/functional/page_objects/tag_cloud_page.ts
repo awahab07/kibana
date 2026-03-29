@@ -16,10 +16,20 @@ export class TagCloudPageObject extends FtrService {
 
   public async selectTagCloudTag(tagDisplayText: string) {
     const elements = await this.find.allByCssSelector('text');
-    const targetElement = elements.find(
-      async (element) => (await element.getVisibleText()) === tagDisplayText
-    );
-    await targetElement?.click();
+    let targetElement: WebElementWrapper | undefined;
+
+    for (const element of elements) {
+      if ((await element.getVisibleText()) === tagDisplayText) {
+        targetElement = element;
+        break;
+      }
+    }
+
+    if (!targetElement) {
+      throw new Error(`Tag cloud tag "${tagDisplayText}" not found`);
+    }
+
+    await targetElement.click();
     await this.header.waitUntilLoadingHasFinished();
   }
 
