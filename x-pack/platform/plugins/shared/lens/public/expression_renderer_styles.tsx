@@ -36,11 +36,12 @@ export const lnsExpressionRendererStyle = (euiThemeContext: UseEuiTheme) => {
 };
 
 /**
- * Global styles for elastic-charts elements rendered via portals (tooltips, annotations).
+ * Global styles for portals/popover under Lens.
  * These elements are rendered outside the Lens DOM tree and need global targeting.
  */
 export const lnsGlobalChartStyles = (euiThemeContext: UseEuiTheme) => css`
-  [id^='echTooltipPortal'] {
+  [id^='echTooltipPortal'],
+  [data-euiportal='true'] {
     ${lnsNumericFontStyles(euiThemeContext)}
   }
 `;
