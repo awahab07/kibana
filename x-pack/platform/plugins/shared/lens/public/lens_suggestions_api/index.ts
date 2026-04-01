@@ -94,7 +94,12 @@ export const suggestionsApi = ({
   });
   if (!suggestions.length) return [];
 
-  const primarySuggestion = suggestions[0];
+  const primarySuggestion =
+    preferredVisAttributes && preferredVisualization
+      ? suggestions.find(
+          (suggestion) => suggestion.visualizationId === preferredVisualization.id
+        ) ?? suggestions[0]
+      : suggestions[0];
   const activeVisualization = visualizationMap[primarySuggestion.visualizationId];
   if (
     primarySuggestion.incomplete ||
