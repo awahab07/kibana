@@ -240,17 +240,18 @@ export const Fonts: FunctionComponent<Props> = ({ url }) => {
                 )
                 .join(', ');
 
-              const fontDisplayDeclaration = display ? `\n          font-display: ${display};` : '';
-              const unicodeRangeDeclaration = unicodeRange
-                ? `\n          unicode-range: ${unicodeRange};`
-                : '';
+              const fontFaceRules = [
+                `font-family: '${family}';`,
+                `font-style: ${style};`,
+                `font-weight: ${weight};`,
+                ...(display ? [`font-display: ${display};`] : []),
+                `src: ${src};`,
+                ...(unicodeRange ? [`unicode-range: ${unicodeRange};`] : []),
+              ];
 
               return `
         @font-face {
-          font-family: '${family}';
-          font-style: ${style};
-          font-weight: ${weight};${fontDisplayDeclaration}
-          src: ${src};${unicodeRangeDeclaration}
+          ${fontFaceRules.join('\n          ')}
         }`;
             })
           )
