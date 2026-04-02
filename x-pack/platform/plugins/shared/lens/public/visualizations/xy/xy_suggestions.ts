@@ -84,7 +84,7 @@ export function getSuggestions({
 }: SuggestionRequest<XYVisualizationState>): Array<VisualizationSuggestion<XYVisualizationState>> {
   // Text-based datasource always sets isMultiRow: false regardless of actual data shape,
   // so skip that check for textBased to avoid incorrectly rejecting valid suggestions
-  const isTextBased = datasourceId === 'textBased';
+  const isTextBased = datasourceId === LENS_DATASOURCE_ID.TEXT_BASED;
   const incompleteTable =
     (!isTextBased && !table.isMultiRow) ||
     table.columns.length <= 1 ||
