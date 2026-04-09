@@ -8,7 +8,12 @@
  */
 
 import type { SeriesColorAccessorFn } from '@elastic/charts';
-import { getColorFactory, type ColorMapping, type ColorMappingInputData } from '@kbn/coloring';
+import {
+  getColorFactory,
+  getValueKey,
+  type ColorMapping,
+  type ColorMappingInputData,
+} from '@kbn/coloring';
 import type { KbnPalettes } from '@kbn/palettes';
 import { MultiFieldKey } from '@kbn/data-plugin/common';
 import type { InvertedRawValueMap } from '../data_layers';
@@ -38,7 +43,11 @@ export function getColorSeriesAccessorFn(
           ? rawValueMap.get(splitValue) ?? splitValue
           : splitValue;
       });
-      return getColor(new MultiFieldKey({ key: rawValues }));
+      return getColor(
+        new MultiFieldKey({
+          key: rawValues.map((raw) => getValueKey(raw)),
+        })
+      );
     }
 
     const fieldId = configuredSplitAccessors[0];
