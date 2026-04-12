@@ -56,6 +56,7 @@ import {
 import type { LensApiState } from './schema';
 import { filtersAndQueryToApiFormat, filtersAndQueryToLensState } from './transforms/utils';
 import { isLensLegacyFormat } from './utils';
+import { applyDateHistogramEmptyRowsPolicyToDatasourceStates } from './date_histogram_empty_rows_policy';
 
 const compatibilityMap: Record<string, string> = {
   lnsMetric: 'metric',
@@ -212,17 +213,32 @@ export class LensConfigBuilder {
         query: options.query || { language: 'kuery', query: '' },
       },
     };
+    const datasourceStates = applyDateHistogramEmptyRowsPolicyToDatasourceStates(
+      chartState.state.datasourceStates,
+      chartState.visualizationType,
+      chartState.state.visualization
+    );
+    const normalizedChartState =
+      datasourceStates === chartState.state.datasourceStates
+        ? chartState
+        : {
+            ...chartState,
+            state: {
+              ...chartState.state,
+              datasourceStates,
+            },
+          };
 
     if (options.embeddable) {
       return {
         id: uuidv4(),
-        attributes: chartState,
+        attributes: normalizedChartState,
         timeRange: options.timeRange,
-        references: chartState.references,
+        references: normalizedChartState.references,
       } as LensEmbeddableInput;
     }
 
-    return chartState as LensAttributes;
+    return normalizedChartState as LensAttributes;
   }
 
   fromAPIFormat(config: LensApiState): LensAttributes {
