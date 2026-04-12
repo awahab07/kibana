@@ -177,15 +177,8 @@ export const makeLensEmbeddableFactory =
                 const lensState = state as unknown as SavedObject<LensDocShape860>;
                 return {
                   ...lensState,
-                  attributes: commonMigrateMetricFormatter(lensState.attributes),
-                } as unknown as SerializableRecord;
-              },
-              '9.4.0': (state) => {
-                const lensState = state as unknown as SavedObject<LensDocShape860>;
-                return {
-                  ...lensState,
                   attributes: commonDisableDateHistogramEmptyRowsForFixedCharts(
-                    lensState.attributes
+                    commonMigrateMetricFormatter(lensState.attributes)
                   ),
                 } as unknown as SerializableRecord;
               },
