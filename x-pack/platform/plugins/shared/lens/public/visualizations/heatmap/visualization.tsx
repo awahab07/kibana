@@ -30,6 +30,7 @@ import type {
   UserMessage,
   Visualization,
 } from '@kbn/lens-common';
+import { getDateHistogramEmptyRowsPolicyForVisualizationState } from '@kbn/lens-common';
 import type { HeatmapVisualizationState } from './types';
 import { getSuggestions } from './suggestions';
 import {
@@ -213,6 +214,10 @@ export const getHeatmapVisualization = ({
       state.valueAccessor,
       state?.palette && state.palette.accessor === state.valueAccessor ? state.palette : undefined
     );
+    const dateHistogramEmptyRowsPolicy = getDateHistogramEmptyRowsPolicyForVisualizationState(
+      LENS_HEATMAP_ID,
+      state
+    );
 
     return {
       groups: [
@@ -220,6 +225,9 @@ export const getHeatmapVisualization = ({
           layerId: state.layerId,
           groupId: GROUP_ID.X,
           groupLabel: getAxisName(GROUP_ID.X),
+          paramEditorCustomProps: {
+            dateHistogramEmptyRowsPolicy,
+          },
           accessors: state.xAccessor ? [{ columnId: state.xAccessor }] : [],
           filterOperations: filterOperationsAxis,
           supportsMoreColumns: !state.xAccessor,
@@ -230,6 +238,9 @@ export const getHeatmapVisualization = ({
           layerId: state.layerId,
           groupId: GROUP_ID.Y,
           groupLabel: getAxisName(GROUP_ID.Y),
+          paramEditorCustomProps: {
+            dateHistogramEmptyRowsPolicy,
+          },
           accessors: state.yAccessor ? [{ columnId: state.yAccessor }] : [],
           filterOperations: filterOperationsAxis,
           supportsMoreColumns: !state.yAccessor,

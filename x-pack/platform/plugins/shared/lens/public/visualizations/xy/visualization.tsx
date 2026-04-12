@@ -33,6 +33,7 @@ import type { DataViewsPublicPluginStart } from '@kbn/data-views-plugin/public';
 import { getColorsFromMapping } from '@kbn/coloring';
 import { ToolbarButton } from '@kbn/shared-ux-button-toolbar';
 import { getKbnPalettes, useKbnPalettes, KbnPalette } from '@kbn/palettes';
+import { getDateHistogramEmptyRowsPolicyForVisualizationState } from '@kbn/lens-common';
 
 import { useKibanaIsDarkMode } from '@kbn/react-kibana-context-theme';
 import type {
@@ -497,12 +498,19 @@ export const getXyVisualization = ({
       const palette = paletteService.get(dataLayer.palette?.name || 'default');
       colors = palette.getCategoricalColors(10, dataLayer.palette?.params);
     }
+    const dateHistogramEmptyRowsPolicy = getDateHistogramEmptyRowsPolicyForVisualizationState(
+      'lnsXY',
+      state
+    );
 
     return {
       groups: [
         {
           groupId: 'x',
           groupLabel: getAxisName('x', { isHorizontal }),
+          paramEditorCustomProps: {
+            dateHistogramEmptyRowsPolicy,
+          },
           accessors: dataLayer.xAccessor ? [{ columnId: dataLayer.xAccessor }] : [],
           filterOperations: isBucketed,
           supportsMoreColumns: !dataLayer.xAccessor,
@@ -524,6 +532,9 @@ export const getXyVisualization = ({
           groupLabel: i18n.translate('xpack.lens.xyChart.splitSeries', {
             defaultMessage: 'Breakdown',
           }),
+          paramEditorCustomProps: {
+            dateHistogramEmptyRowsPolicy,
+          },
           accessors: dataLayer.splitAccessors
             ? dataLayer.splitAccessors.map((splitAccessor, i) => ({
                 columnId: splitAccessor,

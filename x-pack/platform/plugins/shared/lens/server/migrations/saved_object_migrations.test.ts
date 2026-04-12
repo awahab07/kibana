@@ -27,6 +27,7 @@ import type {
   LensDocShape850,
   XYVisStatePre850,
   VisState850,
+  LensDocShape860,
 } from './types';
 import { LayerTypes } from '@kbn/expression-xy-plugin/common';
 import type { LegacyMetricState } from '@kbn/lens-common';
@@ -2536,6 +2537,85 @@ describe('Lens migrations', () => {
       expect(result.attributes.state.datasourceStates.formBased).toBe(
         example.attributes.state.datasourceStates.indexpattern
       );
+    });
+  });
+
+  describe('9.4.0 disables empty rows for fixed charts', () => {
+    const context = { log: { warn: () => {} } } as unknown as SavedObjectMigrationContext;
+    const example = {
+      type: 'lens',
+      id: 'mock-saved-object-id',
+      attributes: {
+        title: 'Bar chart',
+        expression: null,
+        visualizationType: 'lnsXY',
+        state: {
+          datasourceMetaData: {
+            filterableIndexPatterns: [],
+          },
+          datasourceStates: {
+            formBased: {
+              currentIndexPatternId: 'logs-*',
+              layers: {
+                layer1: {
+                  columnOrder: ['x'],
+                  columns: {
+                    x: {
+                      dataType: 'date',
+                      isBucketed: true,
+                      label: '@timestamp',
+                      operationType: 'date_histogram',
+                      params: {
+                        interval: 'auto',
+                        includeEmptyRows: true,
+                      },
+                      scale: 'interval',
+                      sourceField: '@timestamp',
+                    },
+                  },
+                },
+              },
+            },
+          },
+          visualization: {
+            preferredSeriesType: 'bar_stacked',
+          },
+          query: { query: '', language: 'kuery' },
+          filters: [],
+        },
+      },
+    } as unknown as SavedObjectUnsanitizedDoc<LensDocShape860>;
+
+    it('turns empty rows off for bar charts', () => {
+      const result = SavedObjectsUtils.getMigrationFunction(migrations['9.4.0'])(
+        example,
+        context
+      ) as SavedObjectUnsanitizedDoc<LensDocShape860>;
+
+      expect(
+        result.attributes.state.datasourceStates.formBased.layers.layer1.columns.x.params
+      ).toHaveProperty('includeEmptyRows', false);
+    });
+
+    it('keeps empty rows enabled for metric charts', () => {
+      const result = SavedObjectsUtils.getMigrationFunction(migrations['9.4.0'])(
+        {
+          ...example,
+          attributes: {
+            ...example.attributes,
+            visualizationType: 'lnsMetric',
+            state: {
+              ...example.attributes.state,
+              visualization: {},
+            },
+          },
+        },
+        context
+      ) as SavedObjectUnsanitizedDoc<LensDocShape860>;
+
+      expect(
+        result.attributes.state.datasourceStates.formBased.layers.layer1.columns.x.params
+      ).toHaveProperty('includeEmptyRows', true);
     });
   });
   // For 8.8.0 tests are already executed at unit level in common_migrations

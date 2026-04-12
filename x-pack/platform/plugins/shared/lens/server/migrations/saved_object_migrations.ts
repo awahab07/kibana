@@ -64,6 +64,7 @@ import {
   commonMigratePartitionMetrics,
   commonMigrateIndexPatternDatasource,
   commonMigrateMetricFormatter,
+  commonDisableDateHistogramEmptyRowsForFixedCharts,
 } from './common_migrations';
 
 interface LensDocShapePre710<VisualizationState = unknown> {
@@ -569,6 +570,14 @@ const migrateMetricFormatter: SavedObjectMigrationFn<LensDocShape860, LensDocSha
   attributes: commonMigrateMetricFormatter(doc.attributes),
 });
 
+const disableDateHistogramEmptyRowsForFixedCharts: SavedObjectMigrationFn<
+  LensDocShape860,
+  LensDocShape860
+> = (doc) => ({
+  ...doc,
+  attributes: commonDisableDateHistogramEmptyRowsForFixedCharts(doc.attributes),
+});
+
 const lensMigrations: SavedObjectMigrationMap = {
   '7.7.0': removeInvalidAccessors,
   // The order of these migrations matter, since the timefield migration relies on the aggConfigs
@@ -592,6 +601,7 @@ const lensMigrations: SavedObjectMigrationMap = {
   '8.5.0': flow(migrateMetricIds, enrichAnnotationLayers, migratePartitionChartGroups),
   '8.6.0': flow(migrateIndexPatternDatasource, migratePartitionMetrics),
   '8.9.0': migrateMetricFormatter,
+  '9.4.0': disableDateHistogramEmptyRowsForFixedCharts,
   // FOLLOW THESE GUIDELINES IF YOU ARE ADDING A NEW MIGRATION!
   // 1. Make sure you are applying migrations for a given version in the same order here as they are applied in x-pack/platform/plugins/shared/lens/server/embeddable/make_lens_embeddable_factory.ts
 };

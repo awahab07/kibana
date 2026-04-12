@@ -28,6 +28,7 @@ import type {
   DatasourcePublicAPI,
 } from '@kbn/lens-common';
 import {
+  getDateHistogramEmptyRowsPolicyForVisualizationState,
   LENS_LAYER_TYPES as layerTypes,
   LENS_METRIC_ID,
   LENS_METRIC_GROUP_ID,
@@ -171,6 +172,10 @@ const getMetricLayerConfiguration = (
 
   const isBucketed = (op: OperationMetadata) => op.isBucketed;
   const canCollapseBy = isPrimaryMetricNumeric && props.state.collapseFn;
+  const dateHistogramEmptyRowsPolicy = getDateHistogramEmptyRowsPolicyForVisualizationState(
+    LENS_METRIC_ID,
+    props.state
+  );
 
   return {
     groups: [
@@ -258,6 +263,9 @@ const getMetricLayerConfiguration = (
         groupLabel: i18n.translate('xpack.lens.metric.breakdownBy', {
           defaultMessage: 'Break down by',
         }),
+        paramEditorCustomProps: {
+          dateHistogramEmptyRowsPolicy,
+        },
         accessors: props.state.breakdownByAccessor
           ? [
               {

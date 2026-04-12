@@ -31,7 +31,11 @@ import {
 } from '@kbn/data-plugin/common';
 import { buildExpressionFunction } from '@kbn/expressions-plugin/public';
 import { TooltipWrapper } from '@kbn/visualization-utils';
-import type { DateHistogramIndexPatternColumn, FormBasedLayer } from '@kbn/lens-common';
+import type {
+  DateHistogramEmptyRowsPolicy,
+  DateHistogramIndexPatternColumn,
+  FormBasedLayer,
+} from '@kbn/lens-common';
 import { esql } from '@elastic/esql';
 import { TIME_SYSTEM_PARAMS } from '@kbn/esql-language';
 
@@ -51,6 +55,10 @@ import {
 const { isValidInterval } = search.aggs;
 
 const calendarOnlyIntervals = new Set(['w', 'M', 'q', 'y']);
+
+interface DateHistogramParamEditorCustomProps {
+  dateHistogramEmptyRowsPolicy?: DateHistogramEmptyRowsPolicy;
+}
 
 function getMultipleDateHistogramsErrorMessage(
   layer: FormBasedLayer,
@@ -262,6 +270,7 @@ export const dateHistogramOperation: OperationDefinition<
     dateRange,
     data,
     indexPattern,
+    paramEditorCustomProps,
   }: ParamEditorProps<DateHistogramIndexPatternColumn>) {
     const field = currentColumn && indexPattern.getFieldByName(currentColumn.sourceField);
     const intervalIsRestricted =
@@ -348,34 +357,41 @@ export const dateHistogramOperation: OperationDefinition<
 
     const bindToGlobalTimePickerValue =
       indexPattern.timeFieldName === field?.name || !currentColumn.params.ignoreTimeRange;
+    const { dateHistogramEmptyRowsPolicy } =
+      (paramEditorCustomProps as DateHistogramParamEditorCustomProps | undefined) ?? {};
+    const showIncludeEmptyRowsSwitch = dateHistogramEmptyRowsPolicy?.isUserConfigurable ?? true;
 
     return (
       <>
-        <EuiSpacer size="s" />
-        <EuiFormRow display="rowCompressed" hasChildLabel={false}>
-          <EuiSwitch
-            label={
-              <EuiText size="xs">
-                {i18n.translate('xpack.lens.indexPattern.dateHistogram.includeEmptyRows', {
-                  defaultMessage: 'Include empty rows',
-                })}
-              </EuiText>
-            }
-            checked={Boolean(currentColumn.params.includeEmptyRows)}
-            data-test-subj="indexPattern-include-empty-rows"
-            onChange={() => {
-              paramEditorUpdater(
-                updateColumnParam({
-                  layer,
-                  columnId,
-                  paramName: 'includeEmptyRows',
-                  value: !currentColumn.params.includeEmptyRows,
-                })
-              );
-            }}
-            compressed
-          />
-        </EuiFormRow>
+        {showIncludeEmptyRowsSwitch && (
+          <>
+            <EuiSpacer size="s" />
+            <EuiFormRow display="rowCompressed" hasChildLabel={false}>
+              <EuiSwitch
+                label={
+                  <EuiText size="xs">
+                    {i18n.translate('xpack.lens.indexPattern.dateHistogram.includeEmptyRows', {
+                      defaultMessage: 'Include empty rows',
+                    })}
+                  </EuiText>
+                }
+                checked={Boolean(currentColumn.params.includeEmptyRows)}
+                data-test-subj="indexPattern-include-empty-rows"
+                onChange={() => {
+                  paramEditorUpdater(
+                    updateColumnParam({
+                      layer,
+                      columnId,
+                      paramName: 'includeEmptyRows',
+                      value: !currentColumn.params.includeEmptyRows,
+                    })
+                  );
+                }}
+                compressed
+              />
+            </EuiFormRow>
+          </>
+        )}
         {indexPattern.timeFieldName !== field?.name && (
           <>
             <EuiSpacer size="s" />
