@@ -29,6 +29,7 @@ import type {
   DataViewsState,
 } from '@kbn/lens-common';
 import { showMemoizedErrorNotification } from '../../lens_ui_errors';
+import { applyDateHistogramEmptyRowsPolicyToDatasourceState } from '../../datasources/form_based/date_histogram_empty_rows_policy';
 import type { LensDispatch } from '../../state_management';
 import { switchVisualization, applyChanges } from '../../state_management';
 
@@ -266,16 +267,24 @@ function getVisualizationSuggestions(
         datasourceId,
         query,
       })
-      .map(({ state, ...visualizationSuggestion }) => ({
-        ...visualizationSuggestion,
-        visualizationId,
-        visualizationState: state,
-        keptLayerIds: datasourceSuggestion.keptLayerIds,
-        datasourceState: datasourceSuggestion.state,
-        datasourceId: datasourceSuggestion.datasourceId,
-        columns: table.columns.length,
-        changeType: table.changeType,
-      }));
+      .map(({ state, ...visualizationSuggestion }) => {
+        const datasourceState = applyDateHistogramEmptyRowsPolicyToDatasourceState(
+          datasourceSuggestion.state,
+          visualizationId,
+          state
+        );
+
+        return {
+          ...visualizationSuggestion,
+          visualizationId,
+          visualizationState: state,
+          keptLayerIds: datasourceSuggestion.keptLayerIds,
+          datasourceState,
+          datasourceId: datasourceSuggestion.datasourceId,
+          columns: table.columns.length,
+          changeType: table.changeType,
+        };
+      });
   } catch (e) {
     showMemoizedErrorNotification(e);
     return [];

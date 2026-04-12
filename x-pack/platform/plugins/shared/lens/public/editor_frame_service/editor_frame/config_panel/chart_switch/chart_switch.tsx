@@ -35,6 +35,7 @@ import type { SelectableEntry } from './chart_switch_selectable';
 import { ChartSwitchSelectable } from './chart_switch_selectable';
 import { ChartSwitchOptionPrepend } from './chart_option';
 import { useEditorFrameService } from '../../../editor_frame_service_context';
+import { applyDateHistogramEmptyRowsPolicyToDatasourceState } from '../../../../datasources/form_based/date_histogram_empty_rows_policy';
 
 type VisChartSwitchPosition = VisualizationType & {
   visualizationId: string;
@@ -99,11 +100,29 @@ export const ChartSwitch = memo(function ChartSwitch({
   const [searchTerm, setSearchTerm] = useState('');
 
   const commitSelection = (selection: VisualizationSelection) => {
+    const visualizationState = selection.getVisualizationState();
+    const currentDatasourceState = activeDatasourceId
+      ? datasourceStates[activeDatasourceId]?.state
+      : undefined;
+    const updatedDatasourceState =
+      selection.datasourceState ??
+      (selection.sameDatasources && currentDatasourceState !== undefined
+        ? applyDateHistogramEmptyRowsPolicyToDatasourceState(
+            currentDatasourceState,
+            selection.visualizationId,
+            visualizationState
+          )
+        : undefined);
+
     switchToSuggestion(
       dispatchLens,
       {
         ...selection,
-        visualizationState: selection.getVisualizationState(),
+        visualizationState,
+        datasourceState:
+          updatedDatasourceState !== currentDatasourceState
+            ? updatedDatasourceState
+            : selection.datasourceState,
       },
       { clearStagedPreview: true }
     );
