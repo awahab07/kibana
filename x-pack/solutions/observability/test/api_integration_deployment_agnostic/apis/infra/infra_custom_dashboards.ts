@@ -18,6 +18,7 @@ const getCustomDashboardsUrl = (assetType: string, dashboardSavedObjectId?: stri
     ? `/api/infra/${assetType}/custom-dashboards/${dashboardSavedObjectId}`
     : `/api/infra/${assetType}/custom-dashboards`;
 
+// TDDO: Ideally we should have a deterministic way to know when settings updates are propagated to the UI.
 const CUSTOM_DASHBOARDS_SETTING_PROPAGATION_DELAY_MS = 12_000;
 const CUSTOM_DASHBOARDS_SETTING_PROPAGATION_TIMEOUT_MS = 20_000;
 
@@ -216,7 +217,7 @@ export default function ({ getService }: DeploymentAgnosticFtrProviderContext) {
       });
 
       describe('PUT endpoint for updating custom dashboard', () => {
-        it('responds with an error when trying to update not existing dashboard', async () => {
+        it('responds with an error when trying to update non existing dashboard', async () => {
           const payload: InfraSaveCustomDashboardsRequestPayload = {
             dashboardSavedObjectId: '123',
             dashboardFilterAssetIdEnabled: true,
