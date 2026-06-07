@@ -1,0 +1,13 @@
+{
+  "id": "aipm",
+  "owner": {
+    "name": "Obs AI Team",
+    "githubTeam": "obs-ai-team"
+  },
+  "version": "kibana",
+  "server": true,
+  "ui": true,
+  "requiredPlugins": ["navigation"],
+  "optionalPlugins": [],
+  "description": "AI observability showcase plugin shell"
+}
