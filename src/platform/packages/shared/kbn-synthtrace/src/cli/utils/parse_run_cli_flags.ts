@@ -25,6 +25,8 @@ const SCENARIO_ALIASES: Record<string, string> = {
   agent_config: 'x-pack/solutions/observability/plugins/apm/test/scenarios/agent_config.ts',
   aipm_cross_signal_rollout_capacity:
     'x-pack/solutions/observability/plugins/aipm/test/scenarios/cross_signal_rollout_capacity.ts',
+  aipm_fullstack_llm_journey:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/fullstack_llm_journey.ts',
   aipm_indirect_prompt_injection:
     'x-pack/solutions/observability/plugins/aipm/test/scenarios/indirect_prompt_injection.ts',
   aipm_playground_routing_cost:

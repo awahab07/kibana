@@ -8,21 +8,26 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import type { AppMountParameters, CoreStart } from '@kbn/core/public';
+import { KibanaRenderContextProvider } from '@kbn/react-kibana-context-render';
 import type { AppPluginStartDependencies } from './types';
 import { AipmApp } from './components/app';
 
 export const renderApp = (
-  { notifications, http }: CoreStart,
+  coreStart: CoreStart,
   { navigation }: AppPluginStartDependencies,
-  { appBasePath, element }: AppMountParameters
+  { appBasePath, history, element }: AppMountParameters
 ) => {
+  const { notifications, http } = coreStart;
   ReactDOM.render(
-    <AipmApp
-      basename={appBasePath}
-      notifications={notifications}
-      http={http}
-      navigation={navigation}
-    />,
+    <KibanaRenderContextProvider {...coreStart}>
+      <AipmApp
+        basename={appBasePath}
+        history={history}
+        notifications={notifications}
+        http={http}
+        navigation={navigation}
+      />
+    </KibanaRenderContextProvider>,
     element
   );
 

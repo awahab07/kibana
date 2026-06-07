@@ -16,14 +16,21 @@ import {
 } from '@kbn/aipm-schema-catalog';
 import {
   AIPM_BOOTSTRAP_API_PATH,
+  AIPM_CURATED_TRACES_API_PATH,
   AIPM_FEATURE_OVERVIEW_API_PATH,
   EXPERIMENTS_ARTIFACT_LABEL,
   PLAYGROUND_SURFACE_LABEL,
   PLUGIN_ID,
   PLUGIN_NAME,
   type AipmBootstrapRouteResponse,
+  type AipmCuratedTraceDetailRouteResponse,
+  type AipmCuratedTraceListRouteResponse,
   type AipmFeatureOverviewRouteResponse,
 } from '../../common';
+import {
+  getAipmCuratedTraceDetail,
+  getAipmCuratedTraces,
+} from '../lib/get_curated_trace_experience';
 import { getAipmFeatureOverview } from '../lib/get_feature_overview';
 
 export function defineRoutes(router: IRouter) {
@@ -81,6 +88,63 @@ export function defineRoutes(router: IRouter) {
       const body: AipmFeatureOverviewRouteResponse = await getAipmFeatureOverview(esClient);
 
       return response.ok({ body });
+    }
+  );
+
+  router.get(
+    {
+      path: AIPM_CURATED_TRACES_API_PATH,
+      validate: {
+        query: schema.object({}),
+      },
+      options: {
+        access: 'internal',
+      },
+      security: {
+        authz: {
+          enabled: false,
+          reason: 'AIPM showcase routes do not register feature privileges yet.',
+        },
+      },
+    },
+    async (context, _request, response) => {
+      const esClient = (await context.core).elasticsearch.client.asCurrentUser;
+      const body: AipmCuratedTraceListRouteResponse = await getAipmCuratedTraces(esClient);
+
+      return response.ok({ body });
+    }
+  );
+
+  router.get(
+    {
+      path: `${AIPM_CURATED_TRACES_API_PATH}/{traceId}`,
+      validate: {
+        params: schema.object({
+          traceId: schema.string(),
+        }),
+        query: schema.object({}),
+      },
+      options: {
+        access: 'internal',
+      },
+      security: {
+        authz: {
+          enabled: false,
+          reason: 'AIPM showcase routes do not register feature privileges yet.',
+        },
+      },
+    },
+    async (context, request, response) => {
+      const esClient = (await context.core).elasticsearch.client.asCurrentUser;
+      const body = await getAipmCuratedTraceDetail(esClient, request.params.traceId);
+
+      if (!body) {
+        return response.notFound({
+          body: { message: `Curated AIPM trace not found for id ${request.params.traceId}` },
+        });
+      }
+
+      return response.ok({ body: body as AipmCuratedTraceDetailRouteResponse });
     }
   );
 }

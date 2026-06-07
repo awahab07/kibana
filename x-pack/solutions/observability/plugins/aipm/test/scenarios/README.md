@@ -41,6 +41,11 @@ The current Task `003` implementation is organized into these scenario files:
 - `tool_retrieval_mcp_orchestration.ts`
   covers successful tool use, MCP fan-out, tool argument hallucination, and
   cascading context errors
+- `fullstack_llm_journey.ts`
+  covers the curated end-to-end LLM journey used by the new trace waterfall and
+  agent map, including user prompt, guardrails, planner model, retrieval, tool
+  execution, MCP fan-out, downstream services, answer synthesis, LLM judge
+  scoring, and user feedback
 - `provider_runtime_and_schema_drift.ts`
   covers throttling, truncation, missing eval events, telemetry drops, and
   schema drift
