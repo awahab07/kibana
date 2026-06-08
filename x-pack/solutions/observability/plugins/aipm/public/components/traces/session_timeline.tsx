@@ -15,9 +15,9 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
-import type { AipmCuratedSessionEvent } from '../../../common';
+import type { AipmTraceSessionEvent } from '../../../common';
 
-export function AipmSessionTimeline({ events }: { events: AipmCuratedSessionEvent[] }) {
+export function AipmSessionTimeline({ events }: { events: AipmTraceSessionEvent[] }) {
   return (
     <EuiPanel hasBorder hasShadow={false}>
       <EuiTitle size="s">

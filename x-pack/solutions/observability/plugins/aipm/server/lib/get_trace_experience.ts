@@ -7,21 +7,21 @@
 
 import type { ElasticsearchClient } from '@kbn/core/server';
 import type {
-  AipmCuratedEntityCounts,
-  AipmCuratedMapEdge,
-  AipmCuratedMapNode,
-  AipmCuratedSessionEvent,
-  AipmCuratedTraceDetailRouteResponse,
-  AipmCuratedTraceListItem,
-  AipmCuratedTraceListRouteResponse,
-  AipmCuratedTraceSummary,
-  AipmCuratedWaterfallItem,
+  AipmTraceEntityCounts,
+  AipmTraceMapEdge,
+  AipmTraceMapNode,
+  AipmTraceSessionEvent,
+  AipmTraceDetailRouteResponse,
+  AipmTraceListItem,
+  AipmTraceListRouteResponse,
+  AipmTraceSummary,
+  AipmTraceWaterfallItem,
 } from '../../common';
 
 const TRACE_INDEX_PATTERN = ['traces-apm*', 'traces-*.otel*'];
 const LOG_INDEX_PATTERN = ['logs-aipm.session*'];
-const CURATED_STORY_ID = 'aipm-fullstack-llm-journey';
-const CURATED_STORY_LABEL = 'Full-stack LLM journey';
+const DEFAULT_TRACE_STORY_ID = 'aipm-fullstack-llm-journey';
+const DEFAULT_TRACE_STORY_LABEL = 'Full-stack LLM journey';
 const MAX_ROOT_TRACE_DOCS = 24;
 const MAX_TRACE_DOCS_FOR_COUNTS = 400;
 const MAX_TRACE_DETAIL_DOCS = 120;
@@ -216,14 +216,15 @@ function getWorkflowId(source: AnyDocument) {
 
 function getStoryId(source: AnyDocument) {
   return (
-    readString(source, ['attributes.es_sdk.story.id', 'log.custom.story_id']) ?? CURATED_STORY_ID
+    readString(source, ['attributes.es_sdk.story.id', 'log.custom.story_id']) ??
+    DEFAULT_TRACE_STORY_ID
   );
 }
 
 function getStoryLabel(source: AnyDocument) {
   return (
     readString(source, ['attributes.es_sdk.story.label', 'attributes.es_sdk.variant.id']) ??
-    CURATED_STORY_LABEL
+    DEFAULT_TRACE_STORY_LABEL
   );
 }
 
@@ -303,7 +304,7 @@ function formatEdgeLabel({
   return parts.join(' • ') || 'flow';
 }
 
-async function searchCuratedRootTraces(esClient: ElasticsearchClient) {
+async function searchRootTraces(esClient: ElasticsearchClient) {
   const response = await esClient.search<AnyDocument>({
     index: TRACE_INDEX_PATTERN,
     size: MAX_ROOT_TRACE_DOCS,
@@ -313,7 +314,7 @@ async function searchCuratedRootTraces(esClient: ElasticsearchClient) {
       bool: {
         filter: [
           { range: { '@timestamp': { gte: 'now-30d' } } },
-          { term: { 'attributes.es_sdk.story.id': CURATED_STORY_ID } },
+          { term: { 'attributes.es_sdk.story.id': DEFAULT_TRACE_STORY_ID } },
           { term: { kind: 'Server' } },
         ],
       },
@@ -325,7 +326,7 @@ async function searchCuratedRootTraces(esClient: ElasticsearchClient) {
     .filter((source): source is AnyDocument => Boolean(source));
 }
 
-async function searchCuratedTraceDocs(esClient: ElasticsearchClient) {
+async function searchTraceDocs(esClient: ElasticsearchClient) {
   const response = await esClient.search<AnyDocument>({
     index: TRACE_INDEX_PATTERN,
     size: MAX_TRACE_DOCS_FOR_COUNTS,
@@ -335,7 +336,7 @@ async function searchCuratedTraceDocs(esClient: ElasticsearchClient) {
       bool: {
         filter: [
           { range: { '@timestamp': { gte: 'now-30d' } } },
-          { term: { 'attributes.es_sdk.story.id': CURATED_STORY_ID } },
+          { term: { 'attributes.es_sdk.story.id': DEFAULT_TRACE_STORY_ID } },
         ],
       },
     },
@@ -359,7 +360,7 @@ async function searchTraceDetailDocs(esClient: ElasticsearchClient, traceId: str
       bool: {
         filter: [
           { range: { '@timestamp': { gte: 'now-30d' } } },
-          { term: { 'attributes.es_sdk.story.id': CURATED_STORY_ID } },
+          { term: { 'attributes.es_sdk.story.id': DEFAULT_TRACE_STORY_ID } },
           { term: { trace_id: traceId } },
         ],
       },
@@ -384,7 +385,7 @@ async function searchTraceDetailLogs(esClient: ElasticsearchClient, traceId: str
       bool: {
         filter: [
           { range: { '@timestamp': { gte: 'now-30d' } } },
-          { term: { 'log.custom.story_id': CURATED_STORY_ID } },
+          { term: { 'log.custom.story_id': DEFAULT_TRACE_STORY_ID } },
           { term: { 'trace.id': traceId } },
         ],
       },
@@ -396,7 +397,7 @@ async function searchTraceDetailLogs(esClient: ElasticsearchClient, traceId: str
     .filter((source): source is AnyDocument => Boolean(source));
 }
 
-function toTraceListItem(source: AnyDocument): AipmCuratedTraceListItem {
+function toTraceListItem(source: AnyDocument): AipmTraceListItem {
   const traceId = getTraceId(source);
   const serviceName = getServiceName(source);
   const inputTokens = getInputTokens(source);
@@ -444,7 +445,7 @@ function toTraceListItem(source: AnyDocument): AipmCuratedTraceListItem {
 function buildEntityCounts(
   rootDocs: AnyDocument[],
   traceDocs: AnyDocument[]
-): AipmCuratedEntityCounts {
+): AipmTraceEntityCounts {
   return {
     traces: rootDocs.length,
     workflows: uniqueCount(rootDocs.map(getWorkflowId)),
@@ -456,7 +457,7 @@ function buildEntityCounts(
   };
 }
 
-function buildTraceSummary(root: AnyDocument): AipmCuratedTraceSummary {
+function buildTraceSummary(root: AnyDocument): AipmTraceSummary {
   const traceId = getTraceId(root);
   const serviceName = getServiceName(root);
   const inputTokens = getInputTokens(root);
@@ -496,7 +497,7 @@ function buildTraceSummary(root: AnyDocument): AipmCuratedTraceSummary {
   };
 }
 
-function buildWaterfall(traceDocs: AnyDocument[], traceId: string): AipmCuratedWaterfallItem[] {
+function buildWaterfall(traceDocs: AnyDocument[], traceId: string): AipmTraceWaterfallItem[] {
   const root = traceDocs.find((doc) => !getParentSpanId(doc)) ?? traceDocs[0];
   const rootStartedAtUs = root ? getTimestampUs(root) : 0;
   const spanIdToDepth = new Map<string, number>();
@@ -570,7 +571,7 @@ function buildWaterfall(traceDocs: AnyDocument[], traceId: string): AipmCuratedW
   });
 }
 
-function buildSessionEvents(logDocs: AnyDocument[]): AipmCuratedSessionEvent[] {
+function buildSessionEvents(logDocs: AnyDocument[]): AipmTraceSessionEvent[] {
   return logDocs.map((doc, index) => {
     const level = readString(doc, ['log.level']) ?? 'info';
     const outcome = readString(doc, ['event.outcome']) ?? 'unknown';
@@ -598,17 +599,17 @@ function buildSessionEvents(logDocs: AnyDocument[]): AipmCuratedSessionEvent[] {
 }
 
 function buildMap(
-  trace: AipmCuratedTraceSummary,
-  waterfall: AipmCuratedWaterfallItem[]
-): { nodes: AipmCuratedMapNode[]; edges: AipmCuratedMapEdge[] } {
-  const nodes: AipmCuratedMapNode[] = [];
-  const edges: AipmCuratedMapEdge[] = [];
+  trace: AipmTraceSummary,
+  waterfall: AipmTraceWaterfallItem[]
+): { nodes: AipmTraceMapNode[]; edges: AipmTraceMapEdge[] } {
+  const nodes: AipmTraceMapNode[] = [];
+  const edges: AipmTraceMapEdge[] = [];
   const nodeIds = new Set<string>();
 
   const promptNodeId = 'prompt.user';
   const responseNodeId = 'assistant.response';
 
-  const addNode = (node: AipmCuratedMapNode) => {
+  const addNode = (node: AipmTraceMapNode) => {
     if (!nodeIds.has(node.id)) {
       nodeIds.add(node.id);
       nodes.push(node);
@@ -731,27 +732,27 @@ function buildMap(
   return { nodes, edges };
 }
 
-export async function getAipmCuratedTraces(
+export async function getAipmTraces(
   esClient: ElasticsearchClient
-): Promise<AipmCuratedTraceListRouteResponse> {
+): Promise<AipmTraceListRouteResponse> {
   const [rootDocs, traceDocs] = await Promise.all([
-    searchCuratedRootTraces(esClient),
-    searchCuratedTraceDocs(esClient),
+    searchRootTraces(esClient),
+    searchTraceDocs(esClient),
   ]);
 
   return {
     updatedAt: new Date().toISOString(),
-    storyId: CURATED_STORY_ID,
-    storyLabel: CURATED_STORY_LABEL,
+    storyId: DEFAULT_TRACE_STORY_ID,
+    storyLabel: DEFAULT_TRACE_STORY_LABEL,
     traces: rootDocs.map(toTraceListItem),
     entityCounts: buildEntityCounts(rootDocs, traceDocs),
   };
 }
 
-export async function getAipmCuratedTraceDetail(
+export async function getAipmTraceDetail(
   esClient: ElasticsearchClient,
   traceId: string
-): Promise<AipmCuratedTraceDetailRouteResponse | undefined> {
+): Promise<AipmTraceDetailRouteResponse | undefined> {
   const [traceDocs, logDocs] = await Promise.all([
     searchTraceDetailDocs(esClient, traceId),
     searchTraceDetailLogs(esClient, traceId),

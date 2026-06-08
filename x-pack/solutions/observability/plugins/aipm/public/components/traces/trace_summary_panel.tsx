@@ -19,14 +19,14 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
-import type { AipmCuratedTraceSummary } from '../../../common';
+import type { AipmTraceSummary } from '../../../common';
 import { formatCurrency, formatDurationUs, formatRating } from './formatters';
 
 export function AipmTraceSummaryPanel({
   trace,
   buildApmHref,
 }: {
-  trace: AipmCuratedTraceSummary;
+  trace: AipmTraceSummary;
   buildApmHref: (apmQuery: string) => string;
 }) {
   return (

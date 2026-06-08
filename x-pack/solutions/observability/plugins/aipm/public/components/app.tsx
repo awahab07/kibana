@@ -34,16 +34,16 @@ import {
   PLUGIN_ID,
   PLUGIN_NAME,
   type AipmBootstrapRouteResponse,
-  type AipmCuratedEntityCounts,
+  type AipmTraceEntityCounts,
   type AipmFeatureOverviewRouteResponse,
 } from '../../common';
-import { AipmAgentMap } from './curated/agent_map';
-import { formatCurrency, formatDurationUs, formatRating } from './curated/formatters';
-import { AipmSessionTimeline } from './curated/session_timeline';
-import { AipmTraceSelectorPanel } from './curated/trace_selector_panel';
-import { AipmTraceSummaryPanel } from './curated/trace_summary_panel';
-import { AipmTraceWaterfall } from './curated/trace_waterfall';
-import { useCuratedTraceData } from './curated/use_curated_trace_data';
+import { AipmAgentMap } from './traces/agent_map';
+import { formatCurrency, formatDurationUs, formatRating } from './traces/formatters';
+import { AipmSessionTimeline } from './traces/session_timeline';
+import { AipmTraceSelectorPanel } from './traces/trace_selector_panel';
+import { AipmTraceSummaryPanel } from './traces/trace_summary_panel';
+import { AipmTraceWaterfall } from './traces/trace_waterfall';
+import { useAipmTraceData } from './traces/use_trace_data';
 import { AipmFeaturePanel } from './feature_panel';
 
 interface AipmAppDeps {
@@ -54,9 +54,9 @@ interface AipmAppDeps {
   navigation: NavigationPublicPluginStart;
 }
 
-const buildEntityCountCards = (entityCounts: AipmCuratedEntityCounts) => [
+const buildEntityCountCards = (entityCounts: AipmTraceEntityCounts) => [
   {
-    title: 'Curated traces',
+    title: 'Traces',
     description: String(entityCounts.traces),
   },
   {
@@ -138,8 +138,8 @@ const AipmOverviewPage = ({
       <EuiSpacer size="s" />
       <EuiText color="subdued">
         <p>
-          Embeddable-first showcase panels and curated AI workflow experiences, rooted in shared
-          schema descriptors and synthtrace-backed evidence.
+          Embeddable-first showcase panels and AI workflow experiences, rooted in shared schema
+          descriptors and synthtrace-backed evidence.
         </p>
       </EuiText>
       <EuiSpacer size="l" />
@@ -156,9 +156,8 @@ const AipmOverviewPage = ({
         iconType="beaker"
       >
         <p>
-          The curated traces and agent map now sit alongside the top showcase panels so the same
-          evidence can drive the AIPM app, dashboards, Agent Builder attachments, and MCP-facing
-          views.
+          The traces and agent map now sit alongside the top showcase panels so the same evidence
+          can drive the AIPM app, dashboards, Agent Builder attachments, and MCP-facing views.
         </p>
       </EuiCallOut>
 
@@ -168,7 +167,7 @@ const AipmOverviewPage = ({
         <EuiFlexItem>
           <EuiPanel hasBorder hasShadow={false}>
             <EuiTitle size="s">
-              <h2>Curated experiences</h2>
+              <h2>Trace experiences</h2>
             </EuiTitle>
             <EuiSpacer size="m" />
             <EuiDescriptionList
@@ -176,7 +175,7 @@ const AipmOverviewPage = ({
                 {
                   title: 'Trace waterfall',
                   description:
-                    'A curated execution view from user prompt through tools, MCP, models, evaluation, and feedback.',
+                    'An execution view from user prompt through tools, MCP, models, evaluation, and feedback.',
                 },
                 {
                   title: 'Agent map',
@@ -303,7 +302,7 @@ const AipmTracesPage = ({
   notifications,
 }: Pick<AipmAppDeps, 'http' | 'history' | 'notifications'>) => {
   const { traceId } = useParams<{ traceId?: string }>();
-  const { list, detail, isListLoading, isDetailLoading } = useCuratedTraceData({
+  const { list, detail, isListLoading, isDetailLoading } = useAipmTraceData({
     http,
     notifications,
     traceId,
@@ -321,14 +320,14 @@ const AipmTracesPage = ({
   return (
     <>
       <EuiTitle size="l">
-        <h1>Curated traces</h1>
+        <h1>Traces</h1>
       </EuiTitle>
       <EuiSpacer size="s" />
       <EuiText color="subdued">
         <p>
-          AIPM trace explorer with one curated full-stack journey from user prompt through
-          guardrails, tools, MCP fan-out, downstream services, answer synthesis, LLM judge scoring,
-          and user feedback.
+          AIPM trace explorer with one full-stack journey from user prompt through guardrails,
+          tools, MCP fan-out, downstream services, answer synthesis, LLM judge scoring, and user
+          feedback.
         </p>
       </EuiText>
       <EuiSpacer size="l" />
@@ -385,7 +384,7 @@ const AipmAgentMapPage = ({
   notifications,
 }: Pick<AipmAppDeps, 'http' | 'history' | 'notifications'>) => {
   const { traceId } = useParams<{ traceId?: string }>();
-  const { list, detail, isListLoading, isDetailLoading } = useCuratedTraceData({
+  const { list, detail, isListLoading, isDetailLoading } = useAipmTraceData({
     http,
     notifications,
     traceId,
@@ -543,7 +542,7 @@ const AipmShell = ({ basename, history, notifications, http, navigation }: AipmA
               <EuiSpacer size="m" />
               <EuiText size="xs" color="subdued">
                 <p>
-                  Curated routes build on reusable evidence so the same visuals can later power
+                  These routes build on reusable evidence so the same visuals can later power
                   dashboards, Agent Builder, and MCP surfaces.
                 </p>
               </EuiText>

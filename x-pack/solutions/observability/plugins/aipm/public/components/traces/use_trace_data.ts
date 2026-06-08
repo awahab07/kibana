@@ -8,13 +8,13 @@
 import { useEffect, useState } from 'react';
 import type { CoreStart } from '@kbn/core/public';
 import {
-  AIPM_CURATED_TRACES_API_PATH,
-  getAipmCuratedTraceDetailApiPath,
-  type AipmCuratedTraceDetailRouteResponse,
-  type AipmCuratedTraceListRouteResponse,
+  AIPM_TRACES_API_PATH,
+  getAipmTraceDetailApiPath,
+  type AipmTraceDetailRouteResponse,
+  type AipmTraceListRouteResponse,
 } from '../../../common';
 
-export function useCuratedTraceData({
+export function useAipmTraceData({
   http,
   notifications,
   traceId,
@@ -23,8 +23,8 @@ export function useCuratedTraceData({
   notifications: CoreStart['notifications'];
   traceId?: string;
 }) {
-  const [list, setList] = useState<AipmCuratedTraceListRouteResponse | null>(null);
-  const [detail, setDetail] = useState<AipmCuratedTraceDetailRouteResponse | null>(null);
+  const [list, setList] = useState<AipmTraceListRouteResponse | null>(null);
+  const [detail, setDetail] = useState<AipmTraceDetailRouteResponse | null>(null);
   const [isListLoading, setIsListLoading] = useState(true);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
@@ -35,9 +35,7 @@ export function useCuratedTraceData({
       setIsListLoading(true);
 
       try {
-        const response = await http.get<AipmCuratedTraceListRouteResponse>(
-          AIPM_CURATED_TRACES_API_PATH
-        );
+        const response = await http.get<AipmTraceListRouteResponse>(AIPM_TRACES_API_PATH);
 
         if (isMounted) {
           setList(response);
@@ -45,7 +43,7 @@ export function useCuratedTraceData({
       } catch (error) {
         if (isMounted) {
           notifications.toasts.addDanger({
-            title: 'Unable to load curated AIPM traces.',
+            title: 'Unable to load AIPM traces.',
           });
         }
       } finally {
@@ -77,8 +75,8 @@ export function useCuratedTraceData({
       setIsDetailLoading(true);
 
       try {
-        const response = await http.get<AipmCuratedTraceDetailRouteResponse>(
-          getAipmCuratedTraceDetailApiPath(traceId)
+        const response = await http.get<AipmTraceDetailRouteResponse>(
+          getAipmTraceDetailApiPath(traceId)
         );
 
         if (isMounted) {
@@ -88,7 +86,7 @@ export function useCuratedTraceData({
         if (isMounted) {
           setDetail(null);
           notifications.toasts.addDanger({
-            title: 'Unable to load the curated AIPM trace detail.',
+            title: 'Unable to load the AIPM trace detail.',
           });
         }
       } finally {

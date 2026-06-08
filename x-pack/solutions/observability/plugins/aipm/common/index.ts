@@ -19,9 +19,9 @@ export const PLAYGROUND_SURFACE_LABEL = 'Playground';
 export const EXPERIMENTS_ARTIFACT_LABEL = 'Experiments';
 export const AIPM_BOOTSTRAP_API_PATH = '/internal/observability/aipm/bootstrap';
 export const AIPM_FEATURE_OVERVIEW_API_PATH = '/internal/observability/aipm/feature_overview';
-export const AIPM_CURATED_TRACES_API_PATH = '/internal/observability/aipm/curated_traces';
-export const getAipmCuratedTraceDetailApiPath = (traceId: string) =>
-  `/internal/observability/aipm/curated_traces/${encodeURIComponent(traceId)}`;
+export const AIPM_TRACES_API_PATH = '/internal/observability/aipm/traces';
+export const getAipmTraceDetailApiPath = (traceId: string) =>
+  `/internal/observability/aipm/traces/${encodeURIComponent(traceId)}`;
 
 export interface AipmBootstrapRouteResponse {
   pluginId: string;
@@ -65,7 +65,7 @@ export interface AipmFeatureOverviewRouteResponse {
   features: AipmFeatureOverview[];
 }
 
-export interface AipmCuratedTraceListItem {
+export interface AipmTraceListItem {
   traceId: string;
   startedAt: string;
   storyId: string;
@@ -92,7 +92,7 @@ export interface AipmCuratedTraceListItem {
   apmQuery: string;
 }
 
-export interface AipmCuratedEntityCounts {
+export interface AipmTraceEntityCounts {
   traces: number;
   workflows: number;
   sessions: number;
@@ -102,15 +102,15 @@ export interface AipmCuratedEntityCounts {
   mcpServers: number;
 }
 
-export interface AipmCuratedTraceListRouteResponse {
+export interface AipmTraceListRouteResponse {
   updatedAt: string;
   storyId: string;
   storyLabel: string;
-  traces: AipmCuratedTraceListItem[];
-  entityCounts: AipmCuratedEntityCounts;
+  traces: AipmTraceListItem[];
+  entityCounts: AipmTraceEntityCounts;
 }
 
-export interface AipmCuratedTraceSummary {
+export interface AipmTraceSummary {
   traceId: string;
   storyId: string;
   storyLabel: string;
@@ -137,7 +137,7 @@ export interface AipmCuratedTraceSummary {
   badges: string[];
 }
 
-export interface AipmCuratedWaterfallItem {
+export interface AipmTraceWaterfallItem {
   id: string;
   parentId?: string;
   stepId?: string;
@@ -162,7 +162,7 @@ export interface AipmCuratedWaterfallItem {
   apmQuery: string;
 }
 
-export interface AipmCuratedSessionEvent {
+export interface AipmTraceSessionEvent {
   id: string;
   timestamp: string;
   sequence: number;
@@ -174,7 +174,7 @@ export interface AipmCuratedSessionEvent {
   badges: string[];
 }
 
-export interface AipmCuratedMapNode {
+export interface AipmTraceMapNode {
   id: string;
   label: string;
   subtitle?: string;
@@ -191,7 +191,7 @@ export interface AipmCuratedMapNode {
   apmQuery: string;
 }
 
-export interface AipmCuratedMapEdge {
+export interface AipmTraceMapEdge {
   id: string;
   source: string;
   target: string;
@@ -205,13 +205,13 @@ export interface AipmCuratedMapEdge {
   apmQuery: string;
 }
 
-export interface AipmCuratedTraceDetailRouteResponse {
+export interface AipmTraceDetailRouteResponse {
   updatedAt: string;
-  trace: AipmCuratedTraceSummary;
-  waterfall: AipmCuratedWaterfallItem[];
-  sessionEvents: AipmCuratedSessionEvent[];
+  trace: AipmTraceSummary;
+  waterfall: AipmTraceWaterfallItem[];
+  sessionEvents: AipmTraceSessionEvent[];
   map: {
-    nodes: AipmCuratedMapNode[];
-    edges: AipmCuratedMapEdge[];
+    nodes: AipmTraceMapNode[];
+    edges: AipmTraceMapEdge[];
   };
 }

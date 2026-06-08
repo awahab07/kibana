@@ -18,10 +18,10 @@ import {
   EuiTitle,
   useEuiTheme,
 } from '@elastic/eui';
-import type { AipmCuratedWaterfallItem } from '../../../common';
+import type { AipmTraceWaterfallItem } from '../../../common';
 import { formatCurrency, formatDurationUs, getNodeKindColor, getNodeKindLabel } from './formatters';
 
-export function AipmTraceWaterfall({ items }: { items: AipmCuratedWaterfallItem[] }) {
+export function AipmTraceWaterfall({ items }: { items: AipmTraceWaterfallItem[] }) {
   const { euiTheme } = useEuiTheme();
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(items[0]?.id);
 

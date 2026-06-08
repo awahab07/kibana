@@ -15,9 +15,9 @@ import {
   type EdgeProps,
 } from '@xyflow/react';
 import { EuiBadge, useEuiTheme } from '@elastic/eui';
-import type { AipmCuratedMapEdge } from '../../../common';
+import type { AipmTraceMapEdge } from '../../../common';
 
-export type AipmMapEdgeData = AipmCuratedMapEdge & Record<string, unknown>;
+export type AipmMapEdgeData = AipmTraceMapEdge & Record<string, unknown>;
 export type AipmAgentMapEdgeType = Edge<AipmMapEdgeData, 'aipmEdge'>;
 
 export function AipmAgentMapEdge({

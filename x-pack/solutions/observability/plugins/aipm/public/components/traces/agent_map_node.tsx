@@ -17,10 +17,10 @@ import {
   EuiText,
   useEuiTheme,
 } from '@elastic/eui';
-import type { AipmCuratedMapNode } from '../../../common';
+import type { AipmTraceMapNode } from '../../../common';
 import { formatCurrency, formatDurationUs, getNodeKindColor, getNodeKindLabel } from './formatters';
 
-export type AipmMapNodeData = AipmCuratedMapNode & Record<string, unknown>;
+export type AipmMapNodeData = AipmTraceMapNode & Record<string, unknown>;
 export type AipmAgentMapNodeType = Node<AipmMapNodeData, 'aipmNode'>;
 
 function getNodeIcon(nodeKind: string) {

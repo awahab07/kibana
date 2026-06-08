@@ -17,7 +17,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { EuiLink, EuiPanel, EuiSpacer, EuiText, EuiTitle, useEuiTheme } from '@elastic/eui';
-import type { AipmCuratedMapEdge, AipmCuratedMapNode } from '../../../common';
+import type { AipmTraceMapEdge, AipmTraceMapNode } from '../../../common';
 import { applyGraphLayout } from './layout_graph';
 import {
   AipmAgentMapEdge,
@@ -44,8 +44,8 @@ function AipmAgentMapInner({
   edges,
   buildApmHref,
 }: {
-  nodes: AipmCuratedMapNode[];
-  edges: AipmCuratedMapEdge[];
+  nodes: AipmTraceMapNode[];
+  edges: AipmTraceMapEdge[];
   buildApmHref: (apmQuery: string) => string;
 }) {
   const { euiTheme } = useEuiTheme();
@@ -200,8 +200,8 @@ export function AipmAgentMap({
   edges,
   buildApmHref,
 }: {
-  nodes: AipmCuratedMapNode[];
-  edges: AipmCuratedMapEdge[];
+  nodes: AipmTraceMapNode[];
+  edges: AipmTraceMapEdge[];
   buildApmHref: (apmQuery: string) => string;
 }) {
   return (

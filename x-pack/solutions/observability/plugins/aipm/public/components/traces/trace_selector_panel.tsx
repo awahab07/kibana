@@ -18,7 +18,7 @@ import {
   EuiTitle,
   useEuiTheme,
 } from '@elastic/eui';
-import type { AipmCuratedTraceListItem } from '../../../common';
+import type { AipmTraceListItem } from '../../../common';
 import { formatCurrency, formatDurationUs, formatRating, previewText } from './formatters';
 
 export function AipmTraceSelectorPanel({
@@ -27,7 +27,7 @@ export function AipmTraceSelectorPanel({
   isLoading,
   onSelectTrace,
 }: {
-  traces: AipmCuratedTraceListItem[];
+  traces: AipmTraceListItem[];
   selectedTraceId?: string;
   isLoading: boolean;
   onSelectTrace: (traceId: string) => void;
@@ -48,7 +48,7 @@ export function AipmTraceSelectorPanel({
       <EuiFlexGroup direction="column" gutterSize="m">
         <EuiFlexItem grow={false}>
           <EuiTitle size="s">
-            <h2>Curated traces</h2>
+            <h2>Traces</h2>
           </EuiTitle>
         </EuiFlexItem>
 
@@ -60,10 +60,8 @@ export function AipmTraceSelectorPanel({
           <EuiFlexItem grow={false}>
             <EuiEmptyPrompt
               iconType="inspect"
-              title={<h3>No curated traces yet</h3>}
-              body={
-                <p>Run the curated full-stack journey synthtrace scenario to populate this view.</p>
-              }
+              title={<h3>No traces yet</h3>}
+              body={<p>Run the full-stack journey synthtrace scenario to populate this view.</p>}
             />
           </EuiFlexItem>
         ) : (
