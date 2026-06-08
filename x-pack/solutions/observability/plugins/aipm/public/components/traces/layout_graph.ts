@@ -8,22 +8,27 @@
 import Dagre from '@dagrejs/dagre';
 import { Position, type Edge, type Node } from '@xyflow/react';
 
-const NODE_WIDTH = 240;
-const NODE_HEIGHT = 120;
+export const AIPM_AGENT_MAP_NODE_WIDTH = 320;
+export const AIPM_AGENT_MAP_NODE_HEIGHT = 140;
 
 export function applyGraphLayout<T extends Node>(nodes: T[], edges: Edge[]) {
   const graph = new Dagre.graphlib.Graph()
     .setGraph({
       rankdir: 'LR',
-      ranksep: 100,
-      nodesep: 70,
-      marginx: 30,
-      marginy: 30,
+      ranker: 'network-simplex',
+      acyclicer: 'greedy',
+      ranksep: 112,
+      nodesep: 48,
+      marginx: 24,
+      marginy: 24,
     })
     .setDefaultEdgeLabel(() => ({}));
 
   nodes.forEach((node) => {
-    graph.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+    graph.setNode(node.id, {
+      width: AIPM_AGENT_MAP_NODE_WIDTH,
+      height: AIPM_AGENT_MAP_NODE_HEIGHT,
+    });
   });
 
   edges.forEach((edge) => {
@@ -40,8 +45,12 @@ export function applyGraphLayout<T extends Node>(nodes: T[], edges: Edge[]) {
     return {
       ...node,
       position: {
-        x: Math.round((position?.x ?? NODE_WIDTH / 2) - NODE_WIDTH / 2),
-        y: Math.round((position?.y ?? NODE_HEIGHT / 2) - NODE_HEIGHT / 2),
+        x: Math.round(
+          (position?.x ?? AIPM_AGENT_MAP_NODE_WIDTH / 2) - AIPM_AGENT_MAP_NODE_WIDTH / 2
+        ),
+        y: Math.round(
+          (position?.y ?? AIPM_AGENT_MAP_NODE_HEIGHT / 2) - AIPM_AGENT_MAP_NODE_HEIGHT / 2
+        ),
       },
       sourcePosition: Position.Right,
       targetPosition: Position.Left,

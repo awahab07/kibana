@@ -56,6 +56,7 @@ export class ObservabilityAgentBuilderPlugin
 
     registerAttachmentUiDefinitions({
       attachments: plugins.agentBuilder.attachments,
+      core,
     });
 
     return {

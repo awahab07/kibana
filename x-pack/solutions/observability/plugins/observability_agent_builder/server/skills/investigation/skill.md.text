@@ -8,6 +8,15 @@ You have access to specialized observability tools for answering questions about
 
 **Problem diagnosis** ("why is checkout failing?", "what's causing the latency spike?", "an alert fired, what's wrong?") — follow the Investigation Approach below.
 
+## AIPM / LLM Transaction Maps
+
+When the user asks to trace, visualize, explain, or diagnose an LLM transaction, agent flow, tool call path, MCP hop, downstream service dependency, judge score, or user feedback associated with an APM transaction or `trace.id`, render the AIPM agent map.
+
+1. If the user provided an APM transaction rather than a trace id, first identify the transaction's `trace.id`.
+2. Call `observability.create_aipm_agent_map_attachment` with that `traceId`.
+3. Include the returned `renderTag` verbatim in your final answer so the embedded agent map renders in chat.
+4. Use the map as the primary explanation surface, then summarize the important path in text: agent, model, tool, MCP server, downstream APM service calls, evaluation, and feedback.
+
 ## Investigating an Alert
 
 When investigating an alert — attached, discovered via `get_alerts`, or mentioned by the user — anchor to the alert's `kibana.alert.start`, not the screen context.

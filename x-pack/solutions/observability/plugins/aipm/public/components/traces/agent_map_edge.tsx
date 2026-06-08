@@ -10,7 +10,7 @@ import { css } from '@emotion/react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getBezierPath,
+  getSmoothStepPath,
   type Edge,
   type EdgeProps,
 } from '@xyflow/react';
@@ -19,6 +19,11 @@ import type { AipmTraceMapEdge } from '../../../common';
 
 export type AipmMapEdgeData = AipmTraceMapEdge & Record<string, unknown>;
 export type AipmAgentMapEdgeType = Edge<AipmMapEdgeData, 'aipmEdge'>;
+
+function getCompactEdgeLabel(label: string) {
+  const [duration] = label.split(' • ');
+  return duration.length <= 18 ? duration : `${duration.slice(0, 17)}…`;
+}
 
 export function AipmAgentMapEdge({
   data,
@@ -32,18 +37,25 @@ export function AipmAgentMapEdge({
   selected,
 }: EdgeProps<AipmAgentMapEdgeType>) {
   const { euiTheme } = useEuiTheme();
-  const [path, labelX, labelY] = getBezierPath({
+  const [path, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
     targetX,
     targetY,
     sourcePosition,
     targetPosition,
+    borderRadius: 18,
   });
 
   const labelStyles = css`
     transform: translate(-50%, -50%);
     pointer-events: none;
+    max-width: 96px;
+
+    .euiBadge__text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   `;
 
   return (
@@ -66,7 +78,9 @@ export function AipmAgentMapEdge({
               top: labelY,
             }}
           >
-            <EuiBadge color={selected ? 'primary' : 'hollow'}>{data.label}</EuiBadge>
+            <EuiBadge color={selected ? 'primary' : 'hollow'} title={data.label}>
+              {getCompactEdgeLabel(data.label)}
+            </EuiBadge>
           </div>
         </EdgeLabelRenderer>
       ) : null}

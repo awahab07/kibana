@@ -126,7 +126,7 @@ const AipmOverviewPage = ({
   }, [http, notifications]);
 
   const buildApmHref = (kuery: string) =>
-    http.basePath.prepend(`/app/apm/services?kuery=${encodeURIComponent(kuery)}`);
+    http.basePath.prepend(`/app/apm/traces?kuery=${encodeURIComponent(kuery)}`);
 
   const featureCatalog = bootstrap?.featureCatalog ?? [];
 
@@ -315,7 +315,7 @@ const AipmTracesPage = ({
   }, [history, list, traceId]);
 
   const buildApmHref = (apmQuery: string) =>
-    http.basePath.prepend(`/app/apm/services?kuery=${encodeURIComponent(apmQuery)}`);
+    http.basePath.prepend(`/app/apm/traces?kuery=${encodeURIComponent(apmQuery)}`);
 
   return (
     <>
@@ -349,7 +349,7 @@ const AipmTracesPage = ({
 
       <EuiSpacer size="l" />
 
-      <EuiFlexGroup alignItems="flexStart" gutterSize="l">
+      <EuiFlexGroup alignItems="flexStart" gutterSize="l" wrap>
         <EuiFlexItem grow={false} style={{ width: 320 }}>
           <AipmTraceSelectorPanel
             traces={list?.traces ?? []}
@@ -358,7 +358,7 @@ const AipmTracesPage = ({
             onSelectTrace={(nextTraceId) => history.push(`/traces/${nextTraceId}`)}
           />
         </EuiFlexItem>
-        <EuiFlexItem>
+        <EuiFlexItem style={{ minWidth: 520 }}>
           {isDetailLoading || !detail ? (
             <EuiPanel hasBorder hasShadow={false}>
               <EuiLoadingSpinner size="xl" />
@@ -384,6 +384,7 @@ const AipmAgentMapPage = ({
   notifications,
 }: Pick<AipmAppDeps, 'http' | 'history' | 'notifications'>) => {
   const { traceId } = useParams<{ traceId?: string }>();
+  const location = useLocation();
   const { list, detail, isListLoading, isDetailLoading } = useAipmTraceData({
     http,
     notifications,
@@ -397,7 +398,10 @@ const AipmAgentMapPage = ({
   }, [history, list, traceId]);
 
   const buildApmHref = (apmQuery: string) =>
-    http.basePath.prepend(`/app/apm/services?kuery=${encodeURIComponent(apmQuery)}`);
+    http.basePath.prepend(`/app/apm/traces?kuery=${encodeURIComponent(apmQuery)}`);
+  const focusParams = new URLSearchParams(location.search);
+  const focusedNodeId = focusParams.get('focusNodeId') ?? undefined;
+  const focusedEdgeId = focusParams.get('focusEdgeId') ?? undefined;
 
   return (
     <>
@@ -414,7 +418,7 @@ const AipmAgentMapPage = ({
       </EuiText>
       <EuiSpacer size="l" />
 
-      <EuiFlexGroup alignItems="flexStart" gutterSize="l">
+      <EuiFlexGroup alignItems="flexStart" gutterSize="l" wrap>
         <EuiFlexItem grow={false} style={{ width: 320 }}>
           <AipmTraceSelectorPanel
             traces={list?.traces ?? []}
@@ -423,7 +427,7 @@ const AipmAgentMapPage = ({
             onSelectTrace={(nextTraceId) => history.push(`/agent-map/${nextTraceId}`)}
           />
         </EuiFlexItem>
-        <EuiFlexItem>
+        <EuiFlexItem style={{ minWidth: 520 }}>
           {isDetailLoading || !detail ? (
             <EuiPanel hasBorder hasShadow={false}>
               <EuiLoadingSpinner size="xl" />
@@ -492,6 +496,8 @@ const AipmAgentMapPage = ({
                 nodes={detail.map.nodes}
                 edges={detail.map.edges}
                 buildApmHref={buildApmHref}
+                focusedNodeId={focusedNodeId}
+                focusedEdgeId={focusedEdgeId}
               />
               <EuiSpacer size="l" />
               <AipmTraceSummaryPanel trace={detail.trace} buildApmHref={buildApmHref} />
@@ -548,7 +554,7 @@ const AipmShell = ({ basename, history, notifications, http, navigation }: AipmA
               </EuiText>
             </EuiPanel>
           </EuiFlexItem>
-          <EuiFlexItem>
+          <EuiFlexItem style={{ minWidth: 0 }}>
             <Routes enableExecutionContextTracking={true}>
               <Route exact path="/">
                 <AipmOverviewPage basename={basename} http={http} notifications={notifications} />

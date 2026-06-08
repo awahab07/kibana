@@ -325,6 +325,7 @@ const scenario: Scenario<ApmOtelFields | LogDocument> = async ({ logger }) => {
         retriever: createService('customer-context-retriever'),
         toolRunner: createService('account-tool-runner'),
         mcpGateway: createService('customer-ops-mcp-gateway'),
+        subscriptionWorkflow: createService('subscription-workflow-service'),
         evaluator: createService('llm-judge-service'),
         guardrail: createService('prompt-guardrail-service'),
         customerProfile: createService('customer-profile-service'),
@@ -344,6 +345,7 @@ const scenario: Scenario<ApmOtelFields | LogDocument> = async ({ logger }) => {
           const retrievalStartedAt = plannerStartedAt + variant.plannerDuration + 70;
           const toolStartedAt = retrievalStartedAt + variant.retrievalDuration + 80;
           const mcpStartedAt = toolStartedAt + 40;
+          const subscriptionWorkflowStartedAt = toolStartedAt + 110;
           const customerProfileStartedAt = mcpStartedAt + 45;
           const entitlementsStartedAt = mcpStartedAt + 85;
           const billingStartedAt = mcpStartedAt + 125;
@@ -509,6 +511,29 @@ const scenario: Scenario<ApmOtelFields | LogDocument> = async ({ logger }) => {
             },
           }).children(customerProfileLookup, entitlementsLookup, billingLookup);
 
+          const subscriptionWorkflowService = buildInternalSpan({
+            instance: services.subscriptionWorkflow,
+            name: 'subscription_workflow.apply_pause_guardrails',
+            timestamp: subscriptionWorkflowStartedAt,
+            duration: 135,
+            outcome: variant.toolOutcome,
+            extraFields: {
+              'attributes.session.id': ids.sessionId,
+              'attributes.es_sdk.story.id': STORY_ID,
+              'attributes.es_sdk.workflow.id': ids.workflowId,
+              'attributes.es_sdk.variant.id': variant.id,
+              'attributes.es_sdk.map.step_id': 'service.subscription_workflow',
+              'attributes.es_sdk.map.parent_step_id': 'tool.lookup_account_bundle',
+              'attributes.es_sdk.map.node_kind': 'service',
+              'attributes.es_sdk.map.label': 'Subscription workflow service',
+              'attributes.es_sdk.map.response.summary':
+                'Tool called the subscription workflow service to normalize pause policy state before answer synthesis.',
+              ...(variant.toolOutcome === 'failure'
+                ? { 'attributes.es_sdk.map.warning': variant.toolSummary }
+                : {}),
+            },
+          });
+
           const toolSpan = buildToolSpan({
             instance: services.toolRunner,
             timestamp: toolStartedAt,
@@ -531,7 +556,7 @@ const scenario: Scenario<ApmOtelFields | LogDocument> = async ({ logger }) => {
                 ? { 'attributes.es_sdk.map.warning': variant.toolSummary }
                 : {}),
             },
-          }).children(mcpGateway);
+          }).children(subscriptionWorkflowService, mcpGateway);
 
           const answerModel = buildModelCallSpan({
             instance: services.provider,
