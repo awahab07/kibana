@@ -299,10 +299,16 @@ function deterministicTraceId(seed: string) {
   return createHash('sha256').update(seed).digest('hex').slice(0, 32);
 }
 
+function buildTraceId(timestamp: Date | number, variantId: string, index: number) {
+  return deterministicTraceId(
+    `${STORY_ID}:${variantId}:${index}:${new Date(timestamp).toISOString()}`
+  );
+}
+
 const scenario: Scenario<ApmOtelFields | LogDocument> = async ({ logger }) => {
   return {
     generate: ({ range, clients: { apmEsClient, logsEsClient } }) => {
-      const namespace = `${ENVIRONMENT}.aipm.curated`;
+      const namespace = `${ENVIRONMENT}.aipm.traces`;
       const createService = (name: string, sdkName: 'opentelemetry' | 'otlp' = 'opentelemetry') =>
         apm
           .otelService({
@@ -333,7 +339,7 @@ const scenario: Scenario<ApmOtelFields | LogDocument> = async ({ logger }) => {
         .generator((timestamp, index) => {
           const variant = variants[index % variants.length];
           const ids = createStoryIdentifiers(STORY_ID, index, variant.id);
-          const traceId = deterministicTraceId(`${STORY_ID}:${variant.id}:${index}`);
+          const traceId = buildTraceId(timestamp, variant.id, index);
           const plannerStartedAt = timestamp + 130;
           const retrievalStartedAt = plannerStartedAt + variant.plannerDuration + 70;
           const toolStartedAt = retrievalStartedAt + variant.retrievalDuration + 80;
@@ -649,7 +655,7 @@ const scenario: Scenario<ApmOtelFields | LogDocument> = async ({ logger }) => {
         .generator((timestamp, index) => {
           const variant = variants[index % variants.length];
           const ids = createStoryIdentifiers(STORY_ID, index, variant.id);
-          const traceId = deterministicTraceId(`${STORY_ID}:${variant.id}:${index}`);
+          const traceId = buildTraceId(timestamp, variant.id, index);
 
           return buildSessionLogs({
             timestamp,
