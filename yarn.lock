@@ -4636,6 +4636,14 @@
   version "0.0.0"
   uid ""
 
+"@kbn/aipm-plugin@link:x-pack/solutions/observability/plugins/aipm":
+  version "0.0.0"
+  uid ""
+
+"@kbn/aipm-schema-catalog@link:x-pack/platform/packages/shared/kbn-aipm-schema-catalog":
+  version "0.0.0"
+  uid ""
+
 "@kbn/alerting-api-integration-helpers@link:x-pack/platform/test/alerting_api_integration/packages/helpers":
   version "0.0.0"
   uid ""

@@ -31,6 +31,18 @@ jest.mock('../../../hooks/use_apm_router', () => ({
   }),
 }));
 
+jest.mock('../../../context/apm_plugin/use_apm_plugin_context', () => ({
+  useApmPluginContext: () => ({
+    core: {
+      http: {
+        basePath: {
+          prepend: (path: string) => path,
+        },
+      },
+    },
+  }),
+}));
+
 jest.mock('@kbn/observability-shared-plugin/public', () => ({
   METRIC_TYPE: { CLICK: 'click' },
   useUiTracker: () => jest.fn(),
@@ -129,5 +141,23 @@ describe('StickySpanProperties', () => {
     renderWithTheme(<StickySpanProperties span={baseSpan} />);
 
     expect(screen.getByText('SELECT *')).toBeInTheDocument();
+  });
+
+  it('renders focused AIPM agent map link for AIPM spans', () => {
+    const aipmSpan = {
+      ...baseSpan,
+      attributes: {
+        es_sdk: {
+          map: {
+            step_id: ['model.planner'],
+          },
+        },
+      },
+    } as unknown as Span;
+
+    renderWithTheme(<StickySpanProperties span={aipmSpan} transaction={baseTransaction} />);
+
+    const link = screen.getByTestId('apmSpanFlyoutOpenAgentMapLink');
+    expect(link).toHaveAttribute('href', '/app/aipm/agent-map/trace-1?focusNodeId=model.planner');
   });
 });
