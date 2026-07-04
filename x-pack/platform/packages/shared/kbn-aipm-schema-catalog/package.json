@@ -1,0 +1,7 @@
+{
+  "name": "@kbn/aipm-schema-catalog",
+  "description": "AIPM schema catalog constants and Zod validators shared across the AI observability showcase.",
+  "private": true,
+  "version": "1.0.0",
+  "license": "Elastic License 2.0"
+}

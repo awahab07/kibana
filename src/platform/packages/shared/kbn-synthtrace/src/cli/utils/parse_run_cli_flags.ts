@@ -23,6 +23,24 @@ const REPO_ROOT = discoverRepoRoot();
  */
 const SCENARIO_ALIASES: Record<string, string> = {
   agent_config: 'x-pack/solutions/observability/plugins/apm/test/scenarios/agent_config.ts',
+  aipm_cross_signal_rollout_capacity:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/cross_signal_rollout_capacity.ts',
+  aipm_fullstack_llm_journey:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/fullstack_llm_journey.ts',
+  aipm_indirect_prompt_injection:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/indirect_prompt_injection.ts',
+  aipm_playground_routing_cost:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/playground_routing_and_cost.ts',
+  aipm_provider_runtime_schema_drift:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/provider_runtime_and_schema_drift.ts',
+  aipm_quality_eval_release_gating:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/quality_eval_release_gating.ts',
+  aipm_semantic_failures:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/semantic_failures.ts',
+  aipm_session_reconstruction_audit:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/session_reconstruction_audit.ts',
+  aipm_tool_retrieval_mcp:
+    'x-pack/solutions/observability/plugins/aipm/test/scenarios/tool_retrieval_mcp_orchestration.ts',
   apache_logs: 'x-pack/platform/plugins/shared/streams/test/scenarios/apache_logs.ts',
   apm_anomalies: 'x-pack/solutions/observability/plugins/apm/test/scenarios/apm_anomalies.ts',
   apm_jvm_metrics_type_conflict:

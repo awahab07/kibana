@@ -15,8 +15,16 @@ export {
   OBSERVABILITY_HOST_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_TRANSACTION_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_MONITOR_ATTACHMENT_TYPE_ID,
+  OBSERVABILITY_AIPM_AGENT_MAP_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_AI_INSIGHTS_INFERENCE_PARENT_FEATURE_ID,
   OBSERVABILITY_AI_INSIGHTS_SUBFEATURE_ID,
 } from './constants';
 
 export type { ConnectorInfo } from './types';
+export {
+  aipmAgentMapAttachmentDataSchema,
+  aipmTraceMapEdgeSchema,
+  aipmTraceMapNodeSchema,
+  aipmTraceSummarySchema,
+} from './aipm_attachments';
+export type { ObservabilityAipmAgentMapAttachmentData } from './aipm_attachments';

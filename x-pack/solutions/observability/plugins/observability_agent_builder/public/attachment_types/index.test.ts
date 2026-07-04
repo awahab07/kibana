@@ -7,6 +7,7 @@
 
 import type { AttachmentServiceStartContract } from '@kbn/agent-builder-browser';
 import {
+  OBSERVABILITY_AIPM_AGENT_MAP_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_AI_INSIGHT_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_ALERT_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_ERROR_ATTACHMENT_TYPE_ID,
@@ -23,22 +24,31 @@ const mockAddAttachmentType = jest.fn();
 const mockAttachments: AttachmentServiceStartContract = {
   addAttachmentType: mockAddAttachmentType,
 } as unknown as AttachmentServiceStartContract;
+const mockCore = {
+  http: {
+    basePath: {
+      prepend: (path: string) => path,
+    },
+  },
+};
 
 describe('registerAttachmentUiDefinitions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('registers all nine attachment types', () => {
+  it('registers all ten attachment types', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
-    expect(mockAddAttachmentType).toHaveBeenCalledTimes(9);
+    expect(mockAddAttachmentType).toHaveBeenCalledTimes(10);
   });
 
   it('registers AI Insight attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const aiInsightCall = mockAddAttachmentType.mock.calls.find(
@@ -54,6 +64,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers alert attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const alertCall = mockAddAttachmentType.mock.calls.find(
@@ -69,6 +80,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers error attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const errorCall = mockAddAttachmentType.mock.calls.find(
@@ -84,6 +96,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers log attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const logCall = mockAddAttachmentType.mock.calls.find(
@@ -99,6 +112,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('returns attachmentLabel when provided in attachment data', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const alertCall = mockAddAttachmentType.mock.calls.find(
@@ -117,6 +131,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('returns default label when attachmentLabel is not provided', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const alertCall = mockAddAttachmentType.mock.calls.find(
@@ -135,6 +150,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('returns default label when attachment data is undefined', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const alertCall = mockAddAttachmentType.mock.calls.find(
@@ -153,6 +169,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers SLO attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const sloCall = mockAddAttachmentType.mock.calls.find(
@@ -168,6 +185,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers service attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const serviceCall = mockAddAttachmentType.mock.calls.find(
@@ -183,6 +201,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers host attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const hostCall = mockAddAttachmentType.mock.calls.find(
@@ -198,6 +217,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers transaction attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const transactionCall = mockAddAttachmentType.mock.calls.find(
@@ -213,6 +233,7 @@ describe('registerAttachmentUiDefinitions', () => {
   it('registers monitor attachment type with correct config', () => {
     registerAttachmentUiDefinitions({
       attachments: mockAttachments,
+      core: mockCore,
     });
 
     const monitorCall = mockAddAttachmentType.mock.calls.find(
@@ -223,5 +244,22 @@ describe('registerAttachmentUiDefinitions', () => {
     const config = monitorCall![1];
     expect(config.getIcon()).toBe('online');
     expect(config.getLabel({ id: 'test', type: 'test', data: {} })).toBe('Monitor');
+  });
+
+  it('registers AIPM agent map attachment type with inline renderer', () => {
+    registerAttachmentUiDefinitions({
+      attachments: mockAttachments,
+      core: mockCore,
+    });
+
+    const aipmAgentMapCall = mockAddAttachmentType.mock.calls.find(
+      (call) => call[0] === OBSERVABILITY_AIPM_AGENT_MAP_ATTACHMENT_TYPE_ID
+    );
+    expect(aipmAgentMapCall).toBeDefined();
+
+    const config = aipmAgentMapCall![1];
+    expect(config.getIcon()).toBe('graphApp');
+    expect(config.getLabel({ id: 'test', type: 'test', data: {} })).toBe('AIPM agent map');
+    expect(config.renderInlineContent).toBeDefined();
   });
 });

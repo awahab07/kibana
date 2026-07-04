@@ -59,6 +59,10 @@ import {
   OBSERVABILITY_GET_APM_CORRELATIONS_TOOL_ID,
   createGetApmCorrelationsTool,
 } from './get_apm_correlations/tool';
+import {
+  OBSERVABILITY_CREATE_AIPM_AGENT_MAP_ATTACHMENT_TOOL_ID,
+  createAipmAgentMapAttachmentTool,
+} from './create_aipm_agent_map_attachment/tool';
 
 export const PLATFORM_TOOL_IDS = [
   platformCoreTools.listIndices,
@@ -85,6 +89,7 @@ export const OBSERVABILITY_TOOL_IDS = [
   OBSERVABILITY_GET_SERVICE_TOPOLOGY_TOOL_ID,
   OBSERVABILITY_GET_LOGS_TOOL_ID,
   OBSERVABILITY_GET_APM_CORRELATIONS_TOOL_ID,
+  OBSERVABILITY_CREATE_AIPM_AGENT_MAP_ATTACHMENT_TOOL_ID,
 ];
 
 export async function registerTools({
@@ -115,6 +120,7 @@ export async function registerTools({
     createGetServiceTopologyTool({ core, plugins, dataRegistry, logger }),
     createGetLogsTool({ core, logger }),
     createGetApmCorrelationsTool({ core, plugins, logger }),
+    createAipmAgentMapAttachmentTool({ core, logger }),
   ];
 
   for (const tool of observabilityTools) {

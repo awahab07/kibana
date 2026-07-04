@@ -48,6 +48,60 @@ function stripTrailingSlash(url: string) {
   return url.replace(/\/$/, '');
 }
 
+const WELL_KNOWN_TOP_LEVEL =
+  /^\/(api|app|internal|spaces|s|bundles|core|ui|translations|login|logout|security|mock_idp)(\/|$)/;
+
+function stripKnownKibanaPaths(pathnameWithSearch: string) {
+  return pathnameWithSearch
+    .replace(/\/spaces\/enter\/?$/, '')
+    .replace(/\/spaces\/space_selector\/?$/, '')
+    .replace(/\/login\b.*$/, '')
+    .replace(/\/mock_idp(?:\/.*)?$/, '')
+    .replace(/\/internal\/security\/capture-url\b.*$/, '')
+    .replace(/\/app\/.*$/, '')
+    .replace(/\/$/, '');
+}
+
+function normalizeKibanaBaseUrl(targetKibanaUrl: string, location?: string | null) {
+  const url = new URL(targetKibanaUrl);
+  const redirectedUrl = location ? new URL(location, url.toString()) : url;
+  const strippedPath = stripKnownKibanaPaths(`${redirectedUrl.pathname}${redirectedUrl.search}`);
+  const normalizedUrl = new URL(url.toString());
+
+  normalizedUrl.pathname =
+    !strippedPath || WELL_KNOWN_TOP_LEVEL.test(`${strippedPath}/`) ? '/' : strippedPath;
+  normalizedUrl.search = '';
+  normalizedUrl.hash = '';
+
+  return stripTrailingSlash(normalizedUrl.toString());
+}
+
+function getKibanaStatusUrl(kibanaUrl: string) {
+  const url = new URL(kibanaUrl);
+  const basePath = url.pathname.replace(/\/$/, '');
+
+  url.pathname = `${basePath}/api/status`;
+  url.search = 'v8format=true';
+  url.hash = '';
+
+  return url.toString();
+}
+
+async function getKibanaStatus(kibanaUrl: string, headers: HeadersInit | undefined) {
+  const statusUrl = getKibanaStatusUrl(kibanaUrl);
+  const response = await fetch(statusUrl, {
+    method: 'GET',
+    headers,
+    dispatcher: getFetchAgent(statusUrl),
+  } as RequestInit);
+
+  return response.status;
+}
+
+function getRequestHeaders(headers?: { Authorization?: string }) {
+  return headers?.Authorization ? { Authorization: headers.Authorization } : undefined;
+}
+
 async function discoverAuth(parsedTarget: Url) {
   const possibleCredentials = [`admin:changeme`, `elastic:changeme`, `elastic_serverless:changeme`];
   for (const auth of possibleCredentials) {
@@ -77,57 +131,32 @@ async function getKibanaUrl({
   try {
     logger.debug(`Checking Kibana URL ${stripAuthIfCi(targetKibanaUrl)} for a redirect`);
 
-    if (apiKey) {
-      const status = await getFetchStatus(targetKibanaUrl, apiKey);
-      if (status !== 200) {
-        throw new Error(`Expected HTTP 200 from ${stripAuthIfCi(targetKibanaUrl)}, got ${status}`);
-      }
-
-      return {
-        kibanaUrl: targetKibanaUrl.replace(/\/$/, ''),
-        kibanaHeaders: getApiKeyHeader(apiKey),
-        apiKey,
-      };
-    }
-
     const url = new URL(targetKibanaUrl);
     const { username, password } = url;
     url.username = '';
     url.password = '';
-    const authHeaders = getBasicAuthHeader(username, password);
-    targetKibanaUrl = url.toString();
+    const kibanaHeaders = apiKey ? getApiKeyHeader(apiKey) : getBasicAuthHeader(username, password);
+    const requestHeaders = getRequestHeaders(kibanaHeaders);
+    targetKibanaUrl = normalizeKibanaBaseUrl(url.toString());
 
     const unredirectedResponse = await fetch(targetKibanaUrl, {
       method: 'HEAD',
       redirect: 'manual',
-      headers: authHeaders,
+      headers: requestHeaders,
       dispatcher: getFetchAgent(targetKibanaUrl),
     } as RequestInit);
 
-    let discoveredKibanaUrl =
-      unredirectedResponse.headers
-        .get('location')
-        ?.replace('/spaces/enter', '')
-        ?.replace('spaces/space_selector', '') || targetKibanaUrl;
+    const discoveredKibanaUrl = normalizeKibanaBaseUrl(
+      targetKibanaUrl,
+      unredirectedResponse.headers.get('location')
+    );
+    const redirectedResponseStatus = await getKibanaStatus(discoveredKibanaUrl, requestHeaders);
 
-    // When redirected, it might only return the pathname, so we need to add the base URL back to it
-    if (discoveredKibanaUrl.startsWith('/')) {
-      url.pathname = discoveredKibanaUrl;
-    }
-
-    discoveredKibanaUrl = url.toString();
-
-    const redirectedResponse = await fetch(discoveredKibanaUrl, {
-      method: 'HEAD',
-      headers: authHeaders,
-      dispatcher: getFetchAgent(discoveredKibanaUrl),
-    } as RequestInit);
-
-    if (redirectedResponse.status !== 200) {
+    if (redirectedResponseStatus !== 200 && redirectedResponseStatus !== 503) {
       throw new Error(
-        `Expected HTTP 200 from ${stripAuthIfCi(discoveredKibanaUrl)}, got ${
-          redirectedResponse.status
-        }`
+        `Expected HTTP 200 or 503 from ${stripAuthIfCi(
+          getKibanaStatusUrl(discoveredKibanaUrl)
+        )}, got ${redirectedResponseStatus}`
       );
     }
 
@@ -135,9 +164,10 @@ async function getKibanaUrl({
 
     return {
       kibanaUrl: discoveredKibanaUrl.replace(/\/$/, ''),
-      kibanaHeaders: authHeaders,
-      username,
-      password,
+      kibanaHeaders: requestHeaders,
+      username: apiKey ? undefined : username,
+      password: apiKey ? undefined : password,
+      apiKey,
     };
   } catch (error) {
     throw new Error(
@@ -220,7 +250,12 @@ function discoverTargetFromKibanaConfig() {
 }
 
 function getTargetUrlFromKibana(kibanaUrl: string) {
-  const kbToEs = kibanaUrl.replace('.kb', '.es');
+  const url = new URL(kibanaUrl);
+  url.pathname = '';
+  url.search = '';
+  url.hash = '';
+
+  const kbToEs = stripTrailingSlash(url.toString()).replace('.kb', '.es');
 
   // If url contains localhost, replace 5601 with 9200
   if (kbToEs.includes('localhost') || kbToEs.includes('127.0.0.1')) {
@@ -231,7 +266,12 @@ function getTargetUrlFromKibana(kibanaUrl: string) {
 }
 
 function getKibanaUrlFromTarget(target: string) {
-  const esToKb = target.replace('.es', '.kb');
+  const url = new URL(target);
+  url.pathname = '';
+  url.search = '';
+  url.hash = '';
+
+  const esToKb = stripTrailingSlash(url.toString()).replace('.es', '.kb');
   // If url contains localhost, replace 9200 with 5601
   if (esToKb.includes('localhost') || esToKb.includes('127.0.0.1')) {
     return esToKb.replace(':9200', ':5601');
@@ -257,6 +297,10 @@ export async function getServiceUrls({
   kibana,
   apiKey,
 }: RunOptions & { logger: Logger }) {
+  if (kibana) {
+    kibana = normalizeKibanaBaseUrl(kibana);
+  }
+
   if (!target) {
     target = discoverTargetFromKibanaConfig();
     if (!kibana) {

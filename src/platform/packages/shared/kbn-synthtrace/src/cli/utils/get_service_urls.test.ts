@@ -96,6 +96,45 @@ describe('getServiceUrls', () => {
       });
     });
 
+    it('should resolve mock SAML redirects to the Kibana base path', async () => {
+      const target = 'http://elastic:changeme@localhost:9200';
+      const kibana = 'http://elastic:changeme@localhost:5601';
+
+      mockedFetch.mockImplementation(async (url) => {
+        if (url === 'http://localhost:5601') {
+          return new Response(null, {
+            status: 302,
+            headers: {
+              location:
+                '/abc/mock_idp/login?SAMLRequest=fake&RelayState=%2Fabc%2Finternal%2Fsecurity%2Flogin',
+            },
+          });
+        }
+
+        if (url === 'http://localhost:5601/abc/api/status?v8format=true') {
+          return new Response(null, { status: 200 });
+        }
+
+        if ((url as string).includes('http://localhost:9200')) {
+          return new Response(null, { status: 200 });
+        }
+
+        throw new Error('Url not found');
+      });
+
+      await expectServiceUrls(target, kibana, undefined, {
+        esUrl: 'http://elastic:changeme@localhost:9200',
+        kibanaUrl: 'http://localhost:5601/abc',
+        esHeaders: undefined,
+        kibanaHeaders: {
+          Authorization: `Basic ${Buffer.from('elastic:changeme').toString('base64')}`,
+        },
+        username: 'elastic',
+        password: 'changeme',
+        apiKey: undefined,
+      });
+    });
+
     it('should throw an error if target URL is invalid', async () => {
       const target = 'http://invalid-kibana-url:9200';
 

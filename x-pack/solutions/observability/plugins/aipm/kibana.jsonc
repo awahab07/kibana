@@ -1,0 +1,15 @@
+{
+  "type": "plugin",
+  "id": "@kbn/aipm-plugin",
+  "owner": ["@elastic/obs-ai-team", "@elastic/obs-presentation-team"],
+  "group": "observability",
+  "visibility": "private",
+  "description": "AI observability showcase plugin shell",
+  "plugin": {
+    "id": "aipm",
+    "browser": true,
+    "server": true,
+    "requiredPlugins": ["navigation"],
+    "optionalPlugins": []
+  }
+}

@@ -5,10 +5,14 @@
  * 2.0.
  */
 
+import React from 'react';
 import { i18n } from '@kbn/i18n';
+import type { CoreStart } from '@kbn/core/public';
 import type { AttachmentServiceStartContract } from '@kbn/agent-builder-browser';
 import type { Attachment } from '@kbn/agent-builder-common/attachments';
+import { AipmAgentMap } from '@kbn/aipm-plugin/public/components/traces/agent_map';
 import {
+  OBSERVABILITY_AIPM_AGENT_MAP_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_AI_INSIGHT_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_ALERT_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_ERROR_ATTACHMENT_TYPE_ID,
@@ -19,10 +23,15 @@ import {
   OBSERVABILITY_TRANSACTION_ATTACHMENT_TYPE_ID,
   OBSERVABILITY_MONITOR_ATTACHMENT_TYPE_ID,
 } from '../../common/constants';
+import type { ObservabilityAipmAgentMapAttachmentData } from '../../common';
 
 type UnknownAttachmentWithLabel = Attachment<
   string,
   { attachmentLabel?: string } & Record<string, unknown>
+>;
+type AipmAgentMapAttachment = Attachment<
+  typeof OBSERVABILITY_AIPM_AGENT_MAP_ATTACHMENT_TYPE_ID,
+  ObservabilityAipmAgentMapAttachmentData
 >;
 
 interface AttachmentTypeConfig {
@@ -107,8 +116,10 @@ const createAttachmentTypeConfig = (defaultLabel: string, icon: string) => ({
 
 export const registerAttachmentUiDefinitions = ({
   attachments,
+  core,
 }: {
   attachments: AttachmentServiceStartContract;
+  core: Pick<CoreStart, 'http'>;
 }) => {
   ATTACHMENT_TYPE_CONFIGS.forEach(({ type, label, icon }) => {
     attachments.addAttachmentType<UnknownAttachmentWithLabel>(
@@ -116,4 +127,38 @@ export const registerAttachmentUiDefinitions = ({
       createAttachmentTypeConfig(label, icon)
     );
   });
+
+  attachments.addAttachmentType<AipmAgentMapAttachment>(
+    OBSERVABILITY_AIPM_AGENT_MAP_ATTACHMENT_TYPE_ID,
+    {
+      getLabel: (attachment) =>
+        attachment.data?.attachmentLabel ??
+        i18n.translate('xpack.observabilityAgentBuilder.attachments.aipmAgentMap.label', {
+          defaultMessage: 'AIPM agent map',
+        }),
+      getIcon: () => 'graphApp',
+      renderInlineContent: ({ attachment }) => {
+        const buildApmHref = (apmQuery: string) =>
+          core.http.basePath.prepend(`/app/apm/traces?kuery=${encodeURIComponent(apmQuery)}`);
+
+        return React.createElement(
+          'div',
+          {
+            style: {
+              width: '100%',
+              minWidth: 0,
+              height: 520,
+            },
+          },
+          React.createElement(AipmAgentMap, {
+            nodes: attachment.data.map.nodes,
+            edges: attachment.data.map.edges,
+            buildApmHref,
+            height: 520,
+            showMiniMap: false,
+          })
+        );
+      },
+    }
+  );
 };
